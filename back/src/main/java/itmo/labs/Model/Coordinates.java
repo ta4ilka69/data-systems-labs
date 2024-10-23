@@ -1,4 +1,4 @@
-package itmo.labs.Model;
+package itmo.labs.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

@@ -1,4 +1,4 @@
-package itmo.labs.Model;
+package itmo.labs.model;
 
 import java.time.LocalDateTime;
 
