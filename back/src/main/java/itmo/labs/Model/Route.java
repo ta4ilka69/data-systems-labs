@@ -2,15 +2,8 @@ package itmo.labs.model;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,27 +19,32 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
     @NotBlank(message = "Route name cannot be null or empty")
+    @Column(nullable = false)
     private String name;
 
     @NotNull(message = "Coordinates cannot be null")
-    @Embedded
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "coordinates_id", referencedColumnName = "id")
+    @Valid
     private Coordinates coordinates;
 
     @Column(nullable = false, updatable = false)
-    private final LocalDateTime creationDate = LocalDateTime.now();
+    private LocalDateTime creationDate = LocalDateTime.now();
 
-    @NotNull(message = "Origin location (from) cannot be null")
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @NotNull(message = "Origin location cannot be null")
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "from_location_id", referencedColumnName = "id", nullable = false)
+    @Valid
     private Location from;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "to_location_id", referencedColumnName = "id")
+    @Valid
     private Location to;
 
     @Min(value = 2, message = "Distance must be greater than 1")
+    @Column
     private Integer distance;
 
     @Min(value = 1, message = "Rating must be greater than 0")

@@ -1,12 +1,19 @@
 package itmo.labs.controller;
 
+import itmo.labs.dto.CoordinatesDTO;
+import itmo.labs.dto.LocationDTO;
+import itmo.labs.dto.RouteDTO;
 import itmo.labs.dto.RouteUpdateDTO;
 import itmo.labs.model.Route;
 import itmo.labs.service.RouteService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/routes")
@@ -21,41 +28,114 @@ public class RouteController {
     }
 
     @PostMapping
-    public ResponseEntity<Route> createRoute(@RequestBody Route route) {
+    public ResponseEntity<RouteDTO> createRoute(@Valid @RequestBody RouteDTO routeDTO) {
+        Route route = convertToEntity(routeDTO);
         Route createdRoute = routeService.createRoute(route);
-
-        webSocketController.notifyRouteChange(new RouteUpdateDTO("ADD", createdRoute.getId()));
-
-        return ResponseEntity.ok(createdRoute);
+        RouteDTO createdRouteDTO = convertToDTO(createdRoute);
+        webSocketController.notifyRouteChange(new RouteUpdateDTO("ADD", createdRouteDTO.getId()));
+        return new ResponseEntity<>(createdRouteDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Route> getRoute(@PathVariable Integer id) {
+    public ResponseEntity<RouteDTO> getRoute(@PathVariable Integer id) {
         Route route = routeService.getRouteById(id);
-        return ResponseEntity.ok(route);
+        RouteDTO routeDTO = convertToDTO(route);
+        return ResponseEntity.ok(routeDTO);
     }
 
     @GetMapping
-    public ResponseEntity<List<Route>> getAllRoutes() {
+    public ResponseEntity<List<RouteDTO>> getAllRoutes() {
         List<Route> routes = routeService.getAllRoutes();
-        return ResponseEntity.ok(routes);
+        List<RouteDTO> routeDTOs = routes.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(routeDTOs);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Route> updateRoute(@PathVariable Integer id, @RequestBody Route route) {
+    public ResponseEntity<RouteDTO> updateRoute(@PathVariable Integer id, @Valid @RequestBody RouteDTO routeDTO) {
+        Route route = convertToEntity(routeDTO);
         Route updatedRoute = routeService.updateRoute(id, route);
-
-        webSocketController.notifyRouteChange(new RouteUpdateDTO("UPDATE", updatedRoute.getId()));
-
-        return ResponseEntity.ok(updatedRoute);
+        RouteDTO updatedRouteDTO = convertToDTO(updatedRoute);
+        webSocketController.notifyRouteChange(new RouteUpdateDTO("UPDATE", updatedRouteDTO.getId()));
+        return ResponseEntity.ok(updatedRouteDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRoute(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteRoute(@PathVariable Integer id) {
         routeService.deleteRoute(id);
-
         webSocketController.notifyRouteChange(new RouteUpdateDTO("DELETE", id));
+        return ResponseEntity.noContent().build();
+    }
 
-        return ResponseEntity.ok().build();
+    // Exception Handler for Route Not Found
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    // Mapping Methods
+
+    private RouteDTO convertToDTO(Route route) {
+        RouteDTO dto = new RouteDTO();
+        dto.setId(route.getId());
+        dto.setName(route.getName());
+        dto.setCoordinates(convertToDTO(route.getCoordinates()));
+        dto.setCreationDate(route.getCreationDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        dto.setFrom(convertToDTO(route.getFrom()));
+        if (route.getTo() != null) {
+            dto.setTo(convertToDTO(route.getTo()));
+        }
+        dto.setDistance(route.getDistance());
+        dto.setRating(route.getRating());
+        return dto;
+    }
+
+    private Route convertToEntity(RouteDTO dto) {
+        Route route = new Route();
+        route.setName(dto.getName());
+        route.setCoordinates(convertToEntity(dto.getCoordinates()));
+        // creationDate is set automatically
+        route.setFrom(convertToEntity(dto.getFrom()));
+        if (dto.getTo() != null) {
+            route.setTo(convertToEntity(dto.getTo()));
+        }
+        route.setDistance(dto.getDistance());
+        route.setRating(dto.getRating());
+        return route;
+    }
+
+    private CoordinatesDTO convertToDTO(itmo.labs.model.Coordinates coordinates) {
+        CoordinatesDTO dto = new CoordinatesDTO();
+        dto.setX(coordinates.getX());
+        dto.setY(coordinates.getY());
+        return dto;
+    }
+
+    private itmo.labs.model.Coordinates convertToEntity(CoordinatesDTO dto) {
+        itmo.labs.model.Coordinates coordinates = new itmo.labs.model.Coordinates();
+        coordinates.setX(dto.getX());
+        coordinates.setY(dto.getY());
+        return coordinates;
+    }
+
+    private LocationDTO convertToDTO(itmo.labs.model.Location location) {
+        LocationDTO dto = new LocationDTO();
+        dto.setId(location.getId());
+        dto.setX(location.getX());
+        dto.setY(location.getY());
+        dto.setName(location.getName());
+        return dto;
+    }
+
+    private itmo.labs.model.Location convertToEntity(LocationDTO dto) {
+        itmo.labs.model.Location location = new itmo.labs.model.Location();
+        if (dto.getId() != null) {
+            location.setId(dto.getId());
+        }
+        location.setX(dto.getX());
+        location.setY(dto.getY());
+        location.setName(dto.getName());
+        return location;
     }
 }
