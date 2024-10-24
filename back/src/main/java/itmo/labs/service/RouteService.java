@@ -3,6 +3,7 @@ package itmo.labs.service;
 import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
+import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.CoordinatesRepository;
 import itmo.labs.repository.LocationRepository;
@@ -61,9 +62,19 @@ public class RouteService {
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
-        if (route.getCreatedBy().getId() != currentUser.getId()
-                && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
+        // Check if the current user is the creator
+        boolean isOwner = route.getCreatedBy().getId() == currentUser.getId();
+
+        // Check if the current user is an admin
+        boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
+
+        if (!isOwner && !isAdmin) {
             throw new IllegalArgumentException("You do not have permission to update this route.");
+        }
+
+        // If the current user is admin, check if admin is allowed to modify this route
+        if (isAdmin && !route.isAllowAdminEditing()) {
+            throw new IllegalArgumentException("Admin is not allowed to modify this route.");
         }
 
         if (routeDetails.getName() != null && !routeDetails.getName().isEmpty()) {
@@ -112,7 +123,6 @@ public class RouteService {
         }
 
         return routeRepository.save(route);
-
     }
 
     public void deleteRoute(Integer id) {
@@ -120,8 +130,13 @@ public class RouteService {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
-        if (route.getCreatedBy().getId() != currentUser.getId() && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
+        boolean isOwner = route.getCreatedBy().getId() == currentUser.getId();
+        boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
+        if (!isOwner && !isAdmin) {
             throw new IllegalArgumentException("You do not have permission to delete this route.");
+        }
+        if (isAdmin && !route.isAllowAdminEditing()) {
+            throw new IllegalArgumentException("Admin is not allowed to delete this route.");
         }
         routeRepository.delete(route);
     }

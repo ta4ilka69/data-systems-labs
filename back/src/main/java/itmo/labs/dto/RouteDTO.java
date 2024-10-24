@@ -31,4 +31,6 @@ public class RouteDTO {
     private int rating;
     private Integer createdById;
     private String createdByUsername;
+
+    private boolean allowAdminEditing;
 }

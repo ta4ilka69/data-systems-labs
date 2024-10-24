@@ -33,12 +33,12 @@ public class Route {
     private LocalDateTime creationDate = LocalDateTime.now();
 
     @NotNull(message = "Origin location cannot be null")
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "from_location_id", referencedColumnName = "location_id", nullable = false)
     @Valid
     private Location from;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "to_location_id", referencedColumnName = "location_id")
     @Valid
     private Location to;
@@ -54,4 +54,6 @@ public class Route {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
+    @Column(name = "allow_admin_editing", nullable = false)
+    private boolean allowAdminEditing = false;
 }
