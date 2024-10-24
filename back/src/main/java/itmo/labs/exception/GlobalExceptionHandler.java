@@ -11,14 +11,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+        String message = ex.getMessage();
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        if (message.contains("not found")) {
+            status = HttpStatus.NOT_FOUND;
+        } else if (message.contains("permission")) {
+            status = HttpStatus.FORBIDDEN;
+        }
+
         ErrorResponse error = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
+                status.value(),
+                message,
                 LocalDateTime.now());
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(error, status);
     }
 
-    // Handle other exception types
+    // Handle other exception types as needed
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
