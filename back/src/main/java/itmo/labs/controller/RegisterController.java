@@ -22,7 +22,8 @@ public class RegisterController {
     /**
      * Endpoint for user registration
      *
-     * @param registerRequest the registration request containing username and password
+     * @param registerRequest the registration request containing username and
+     *                        password
      * @return the registered user's details
      */
     @PostMapping("/register")
@@ -33,5 +34,16 @@ public class RegisterController {
 
         RegisterResponseDTO response = new RegisterResponseDTO(user.getId(), user.getUsername(), user.getRoles());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    /**
+     * Endpoint for requesting admin role
+     *
+     * @return success message
+     */
+    @PostMapping("/request-admin-role")
+    public ResponseEntity<String> requestAdminRole() {
+        userService.requestAdminRole();
+        return new ResponseEntity<>("Admin role request submitted successfully.", HttpStatus.OK);
     }
 }

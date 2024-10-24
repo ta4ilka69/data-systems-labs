@@ -34,7 +34,7 @@ public class RouteController {
     @PostMapping
     public ResponseEntity<RouteDTO> createRoute(@Valid @RequestBody RouteDTO routeDTO) {
         Route route = convertToEntity(routeDTO);
-        Route createdRoute = routeService.createRoute(route); // Removed the username argument
+        Route createdRoute = routeService.createRoute(route);
         RouteDTO responseDTO = convertToDTO(createdRoute);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }

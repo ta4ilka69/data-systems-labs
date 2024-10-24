@@ -3,7 +3,10 @@ package itmo.labs.service;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.UserRepository;
+
+import java.util.List;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +26,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -79,13 +82,29 @@ public class UserService implements UserDetailsService {
     }
 
     /**
-     * Remove admin role from a user
+     * Approve admin role request
      */
     @Transactional
-    public void removeAdminRole(Integer userId) {
+    public void approveAdminRoleRequest(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-        user.getRoles().remove(Role.ADMIN);
+        if (!user.isAdminRoleRequested()) {
+            throw new IllegalArgumentException("No admin role request found for user ID: " + userId);
+        }
+        user.getRoles().add(Role.ADMIN);
+        user.setAdminRoleRequested(false);
+        userRepository.save(user);
+    }
+
+    /**
+     * Request admin role
+     */
+    @Transactional
+    public void requestAdminRole() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+        user.setAdminRoleRequested(true);
         userRepository.save(user);
     }
 
@@ -96,5 +115,13 @@ public class UserService implements UserDetailsService {
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    }
+
+    /**
+     * Get all admin role requests
+     */
+    @Transactional
+    public List<User> getAllAdminRoleRequests() {
+        return userRepository.findByAdminRoleRequestedTrue();
     }
 }
