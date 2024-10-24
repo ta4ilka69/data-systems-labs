@@ -1,5 +1,5 @@
 package itmo.labs.service;
- 
+
 import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
@@ -61,8 +61,8 @@ public class RouteService {
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
-        // Check if current user is the creator or has ADMIN role
-        if (!route.getCreatedBy().equals(currentUser) && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
+        if (route.getCreatedBy().getId() != currentUser.getId()
+                && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
             throw new IllegalArgumentException("You do not have permission to update this route.");
         }
 
@@ -112,6 +112,7 @@ public class RouteService {
         }
 
         return routeRepository.save(route);
+
     }
 
     public void deleteRoute(Integer id) {
@@ -119,7 +120,7 @@ public class RouteService {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
-        if (!route.getCreatedBy().equals(currentUser) && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
+        if (route.getCreatedBy().getId() != currentUser.getId() && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
             throw new IllegalArgumentException("You do not have permission to delete this route.");
         }
         routeRepository.delete(route);
