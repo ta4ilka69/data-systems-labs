@@ -13,6 +13,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "users")
 public class User {
     public User(String username, String password, Set<Role> roles) {
         this.username = username;

@@ -3,7 +3,6 @@ package itmo.labs.controller;
 import itmo.labs.dto.AuthRequestDTO;
 import itmo.labs.dto.AuthResponseDTO;
 import itmo.labs.security.JwtUtil;
-import itmo.labs.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,14 +19,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+
     @Autowired
-    private AuthenticationManager authenticationManager;
-    
-    @Autowired
-    private JwtUtil jwtUtil;
-    
-    @Autowired
-    private UserService userService;
+    public AuthController(JwtUtil jwtUtil,
+                          AuthenticationManager authenticationManager) {
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+    }
 
     /**
      * Endpoint for user login

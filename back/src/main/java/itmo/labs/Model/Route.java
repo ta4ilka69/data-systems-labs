@@ -34,12 +34,12 @@ public class Route {
 
     @NotNull(message = "Origin location cannot be null")
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "from_location_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "from_location_id", referencedColumnName = "location_id", nullable = false)
     @Valid
     private Location from;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "to_location_id", referencedColumnName = "id")
+    @JoinColumn(name = "to_location_id", referencedColumnName = "location_id")
     @Valid
     private Location to;
 
