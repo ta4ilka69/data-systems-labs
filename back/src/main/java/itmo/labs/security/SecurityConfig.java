@@ -1,6 +1,7 @@
 package itmo.labs.security;
 
 import itmo.labs.utils.CustomPasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,40 +9,48 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Enable CSRF protection
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**"))
+                // Disable CSRF for stateless APIs
+                .csrf(csrf -> csrf.disable())
+
+                // Set session management to stateless
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Set authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/routes/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
+                        .requestMatchers("/api/routes/**").hasAnyRole("USER", "ADMIN") // Route endpoints
                         .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login").permitAll())
-                .logout(logout -> logout.permitAll())
-                .authenticationProvider(authenticationProvider()); // Add this line
+
+                // Add JWT token filter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() { // Add this method
+    public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());

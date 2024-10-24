@@ -3,14 +3,13 @@ package itmo.labs.service;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.UserRepository;
-import itmo.labs.utils.CustomPasswordEncoder;
-
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -21,14 +20,17 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final CustomPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
-            CustomPasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Load user by username for Spring Security
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> userOptional = userRepository.findByUsername(username);
@@ -48,6 +50,9 @@ public class UserService implements UserDetailsService {
                 authorities);
     }
 
+    /**
+     * Register a new user
+     */
     @Transactional
     public User registerNewUser(String username, String password, boolean isAdmin) {
         if (userRepository.findByUsername(username).isPresent()) {
@@ -60,5 +65,36 @@ public class UserService implements UserDetailsService {
         Set<Role> roles = isAdmin ? Collections.singleton(Role.ADMIN) : Collections.singleton(Role.USER);
         newUser.setRoles(roles);
         return userRepository.save(newUser);
+    }
+
+    /**
+     * Assign admin role to a user
+     */
+    @Transactional
+    public void assignAdminRole(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        user.getRoles().add(Role.ADMIN);
+        userRepository.save(user);
+    }
+
+    /**
+     * Remove admin role from a user
+     */
+    @Transactional
+    public void removeAdminRole(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        user.getRoles().remove(Role.ADMIN);
+        userRepository.save(user);
+    }
+
+    /**
+     * Get user by username
+     */
+    @Transactional
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
 }
