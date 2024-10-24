@@ -3,7 +3,8 @@ package itmo.labs.service;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.UserRepository;
-import itmo.labs.utils.PasswordEncoderUtil;
+import itmo.labs.utils.CustomPasswordEncoder;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,9 +21,12 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final CustomPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,
+            CustomPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -49,7 +53,7 @@ public class UserService implements UserDetailsService {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username is already taken");
         }
-        String encodedPassword = PasswordEncoderUtil.encode(password);
+        String encodedPassword = passwordEncoder.encode(password);
         User newUser = new User();
         newUser.setUsername(username);
         newUser.setPassword(encodedPassword);
@@ -57,5 +61,4 @@ public class UserService implements UserDetailsService {
         newUser.setRoles(roles);
         return userRepository.save(newUser);
     }
-    
 }
