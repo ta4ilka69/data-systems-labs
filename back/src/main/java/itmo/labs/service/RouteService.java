@@ -3,9 +3,12 @@ package itmo.labs.service;
 import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
+import itmo.labs.model.User;
 import itmo.labs.repository.CoordinatesRepository;
 import itmo.labs.repository.LocationRepository;
 import itmo.labs.repository.RouteRepository;
+import itmo.labs.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -18,16 +21,26 @@ public class RouteService {
     private final RouteRepository routeRepository;
     private final LocationRepository locationRepository;
     private final CoordinatesRepository coordinatesRepository;
+    private final UserRepository userRepository;
 
     public RouteService(RouteRepository routeRepository,
-                        LocationRepository locationRepository,
-                        CoordinatesRepository coordinatesRepository) {
+            LocationRepository locationRepository,
+            CoordinatesRepository coordinatesRepository,
+            UserRepository userRepository) {
         this.routeRepository = routeRepository;
         this.locationRepository = locationRepository;
         this.coordinatesRepository = coordinatesRepository;
+        this.userRepository = userRepository;
     }
 
     public Route createRoute(Route route) {
+        // Retrieve the currently authenticated user
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+
+        route.setCreatedBy(currentUser);
+
         // Handle 'from' Location
         Location from = route.getFrom();
         if (from.getId() != null) {
@@ -67,6 +80,16 @@ public class RouteService {
     public Route updateRoute(Integer id, Route routeDetails) {
         Route route = getRouteById(id);
 
+        // Retrieve the currently authenticated user
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+
+        // Check if current user is the creator or has ADMIN role
+        if (!route.getCreatedBy().equals(currentUser) && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
+            throw new RuntimeException("You do not have permission to update this route.");
+        }
+
         if (routeDetails.getName() != null && !routeDetails.getName().isEmpty()) {
             route.setName(routeDetails.getName());
         }
@@ -105,6 +128,12 @@ public class RouteService {
 
     public void deleteRoute(Integer id) {
         Route route = getRouteById(id);
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+        if (!route.getCreatedBy().equals(currentUser) && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
+            throw new RuntimeException("You do not have permission to delete this route.");
+        }
         routeRepository.delete(route);
     }
 }

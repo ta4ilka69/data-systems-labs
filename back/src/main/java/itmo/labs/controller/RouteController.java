@@ -4,6 +4,8 @@ import itmo.labs.dto.CoordinatesDTO;
 import itmo.labs.dto.LocationDTO;
 import itmo.labs.dto.RouteDTO;
 import itmo.labs.dto.RouteUpdateDTO;
+import itmo.labs.model.Coordinates;
+import itmo.labs.model.Location;
 import itmo.labs.model.Route;
 import itmo.labs.service.RouteService;
 import org.springframework.http.HttpStatus;
@@ -68,13 +70,19 @@ public class RouteController {
         return ResponseEntity.noContent().build();
     }
 
-    // Exception Handler for Route Not Found
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-    }
+        String message = ex.getMessage();
+        HttpStatus status = HttpStatus.BAD_REQUEST;
 
-    // Mapping Methods
+        if (message.contains("not found")) {
+            status = HttpStatus.NOT_FOUND;
+        } else if (message.contains("permission")) {
+            status = HttpStatus.FORBIDDEN;
+        }
+
+        return new ResponseEntity<>(message, status);
+    }
 
     private RouteDTO convertToDTO(Route route) {
         RouteDTO dto = new RouteDTO();
@@ -95,7 +103,6 @@ public class RouteController {
         Route route = new Route();
         route.setName(dto.getName());
         route.setCoordinates(convertToEntity(dto.getCoordinates()));
-        // creationDate is set automatically
         route.setFrom(convertToEntity(dto.getFrom()));
         if (dto.getTo() != null) {
             route.setTo(convertToEntity(dto.getTo()));
@@ -105,21 +112,21 @@ public class RouteController {
         return route;
     }
 
-    private CoordinatesDTO convertToDTO(itmo.labs.model.Coordinates coordinates) {
+    private CoordinatesDTO convertToDTO(Coordinates coordinates) {
         CoordinatesDTO dto = new CoordinatesDTO();
         dto.setX(coordinates.getX());
         dto.setY(coordinates.getY());
         return dto;
     }
 
-    private itmo.labs.model.Coordinates convertToEntity(CoordinatesDTO dto) {
-        itmo.labs.model.Coordinates coordinates = new itmo.labs.model.Coordinates();
+    private Coordinates convertToEntity(CoordinatesDTO dto) {
+        Coordinates coordinates = new Coordinates();
         coordinates.setX(dto.getX());
         coordinates.setY(dto.getY());
         return coordinates;
     }
 
-    private LocationDTO convertToDTO(itmo.labs.model.Location location) {
+    private LocationDTO convertToDTO(Location location) {
         LocationDTO dto = new LocationDTO();
         dto.setId(location.getId());
         dto.setX(location.getX());
@@ -128,8 +135,8 @@ public class RouteController {
         return dto;
     }
 
-    private itmo.labs.model.Location convertToEntity(LocationDTO dto) {
-        itmo.labs.model.Location location = new itmo.labs.model.Location();
+    private Location convertToEntity(LocationDTO dto) {
+        Location location = new Location();
         if (dto.getId() != null) {
             location.setId(dto.getId());
         }

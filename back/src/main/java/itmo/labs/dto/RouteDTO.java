@@ -29,4 +29,6 @@ public class RouteDTO {
 
     @Min(value = 1, message = "Rating must be greater than 0")
     private int rating;
+    private Integer createdById;
+    private String createdByUsername;
 }

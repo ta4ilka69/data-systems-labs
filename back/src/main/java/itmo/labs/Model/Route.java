@@ -50,4 +50,8 @@ public class Route {
     @Min(value = 1, message = "Rating must be greater than 0")
     @Column(nullable = false)
     private int rating;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", nullable = false)
+    private User createdBy;
 }
