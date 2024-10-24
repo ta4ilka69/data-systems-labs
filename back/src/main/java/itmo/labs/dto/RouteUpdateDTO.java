@@ -8,13 +8,15 @@ import lombok.Setter;
 public class RouteUpdateDTO {
     private String action;
     private Integer routeId;
+    private RouteDTO routeDTO;
 
     public RouteUpdateDTO() {
     }
 
-    public RouteUpdateDTO(String action, Integer integer) {
+    public RouteUpdateDTO(String action, Integer integer, RouteDTO routeDTO) {
         this.action = action;
         this.routeId = integer;
+        this.routeDTO = routeDTO;
     }
 
     @Override

@@ -1,5 +1,5 @@
 package itmo.labs.service;
-
+ 
 import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
@@ -37,40 +37,16 @@ public class RouteService {
         // Retrieve the currently authenticated user
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
         route.setCreatedBy(currentUser);
-
-        // Handle 'from' Location
-        Location from = route.getFrom();
-        if (from.getId() != null) {
-            Optional<Location> existingFrom = locationRepository.findById(from.getId());
-            existingFrom.ifPresent(route::setFrom);
-        } else {
-            locationRepository.save(from);
-        }
-
-        // Handle 'to' Location
-        Location to = route.getTo();
-        if (to != null) {
-            if (to.getId() != null) {
-                Optional<Location> existingTo = locationRepository.findById(to.getId());
-                existingTo.ifPresent(route::setTo);
-            } else {
-                locationRepository.save(to);
-            }
-        }
-
-        // Handle Coordinates
-        Coordinates coordinates = route.getCoordinates();
-        coordinatesRepository.save(coordinates);
 
         return routeRepository.save(route);
     }
 
     public Route getRouteById(Integer id) {
         return routeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Route not found with id: " + id));
     }
 
     public List<Route> getAllRoutes() {
@@ -83,11 +59,11 @@ public class RouteService {
         // Retrieve the currently authenticated user
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
         // Check if current user is the creator or has ADMIN role
         if (!route.getCreatedBy().equals(currentUser) && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
-            throw new RuntimeException("You do not have permission to update this route.");
+            throw new IllegalArgumentException("You do not have permission to update this route.");
         }
 
         if (routeDetails.getName() != null && !routeDetails.getName().isEmpty()) {
@@ -95,6 +71,12 @@ public class RouteService {
         }
         if (routeDetails.getCoordinates() != null) {
             Coordinates coordinates = routeDetails.getCoordinates();
+
+            // Ensure coordinates have valid data
+            if (coordinates.getX() == null || coordinates.getY() == null) {
+                throw new IllegalArgumentException("Coordinates X and Y cannot be null.");
+            }
+
             coordinatesRepository.save(coordinates);
             route.setCoordinates(coordinates);
         }
@@ -120,8 +102,14 @@ public class RouteService {
         }
         if (routeDetails.getDistance() != null && routeDetails.getDistance() > 1) {
             route.setDistance(routeDetails.getDistance());
+        } else if (routeDetails.getDistance() != null) {
+            throw new IllegalArgumentException("Distance must be greater than 1.");
         }
-        route.setRating(routeDetails.getRating());
+        if (routeDetails.getRating() > 0) {
+            route.setRating(routeDetails.getRating());
+        } else {
+            throw new IllegalArgumentException("Rating must be greater than 0.");
+        }
 
         return routeRepository.save(route);
     }
@@ -130,9 +118,9 @@ public class RouteService {
         Route route = getRouteById(id);
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
         if (!route.getCreatedBy().equals(currentUser) && !currentUser.getRoles().contains(itmo.labs.model.Role.ADMIN)) {
-            throw new RuntimeException("You do not have permission to delete this route.");
+            throw new IllegalArgumentException("You do not have permission to delete this route.");
         }
         routeRepository.delete(route);
     }

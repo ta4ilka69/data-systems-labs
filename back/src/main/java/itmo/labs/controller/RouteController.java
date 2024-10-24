@@ -8,6 +8,7 @@ import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
 import itmo.labs.service.RouteService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,97 +22,127 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/routes")
 public class RouteController {
 
-    private final RouteService routeService;
-    private final RouteWebSocketController webSocketController;
+    @Autowired
+    private RouteService routeService;
 
-    public RouteController(RouteService routeService, RouteWebSocketController webSocketController) {
-        this.routeService = routeService;
-        this.webSocketController = webSocketController;
-    }
-
+    /**
+     * Create a new Route
+     *
+     * @param routeDTO the Route data
+     * @return the created Route
+     */
     @PostMapping
     public ResponseEntity<RouteDTO> createRoute(@Valid @RequestBody RouteDTO routeDTO) {
         Route route = convertToEntity(routeDTO);
-        Route createdRoute = routeService.createRoute(route);
-        RouteDTO createdRouteDTO = convertToDTO(createdRoute);
-        webSocketController.notifyRouteChange(new RouteUpdateDTO("ADD", createdRouteDTO.getId()));
-        return new ResponseEntity<>(createdRouteDTO, HttpStatus.CREATED);
+        Route createdRoute = routeService.createRoute(route); // Removed the username argument
+        RouteDTO responseDTO = convertToDTO(createdRoute);
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<RouteDTO> getRoute(@PathVariable Integer id) {
-        Route route = routeService.getRouteById(id);
-        RouteDTO routeDTO = convertToDTO(route);
-        return ResponseEntity.ok(routeDTO);
-    }
-
+    /**
+     * Get all Routes
+     *
+     * @return list of Routes
+     */
     @GetMapping
     public ResponseEntity<List<RouteDTO>> getAllRoutes() {
         List<Route> routes = routeService.getAllRoutes();
         List<RouteDTO> routeDTOs = routes.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(routeDTOs);
+        return new ResponseEntity<>(routeDTOs, HttpStatus.OK);
     }
 
+    /**
+     * Get a Route by ID
+     *
+     * @param id the Route ID
+     * @return the Route
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<RouteDTO> getRouteById(@PathVariable Integer id) {
+        Route route = routeService.getRouteById(id);
+        RouteDTO routeDTO = convertToDTO(route);
+        return new ResponseEntity<>(routeDTO, HttpStatus.OK);
+    }
+
+    /**
+     * Update a Route
+     *
+     * @param id          the Route ID
+     * @param routeUpdate the Route update data
+     * @return the updated Route
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<RouteDTO> updateRoute(@PathVariable Integer id, @Valid @RequestBody RouteDTO routeDTO) {
-        Route route = convertToEntity(routeDTO);
-        Route updatedRoute = routeService.updateRoute(id, route);
-        RouteDTO updatedRouteDTO = convertToDTO(updatedRoute);
-        webSocketController.notifyRouteChange(new RouteUpdateDTO("UPDATE", updatedRouteDTO.getId()));
-        return ResponseEntity.ok(updatedRouteDTO);
+    public ResponseEntity<RouteDTO> updateRoute(@PathVariable Integer id,
+                                                @Valid @RequestBody RouteUpdateDTO routeUpdate) {
+        Route updatedRoute = null;
+        if ("update".equalsIgnoreCase(routeUpdate.getAction())) {
+            Route routeDetails = convertToEntity(routeUpdate.getRouteDTO());
+            updatedRoute = routeService.updateRoute(id, routeDetails);
+        } else {
+            throw new IllegalArgumentException("Invalid action: " + routeUpdate.getAction());
+        }
+        RouteDTO responseDTO = convertToDTO(updatedRoute);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
+    /**
+     * Delete a Route
+     *
+     * @param id the Route ID
+     * @return no content
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoute(@PathVariable Integer id) {
         routeService.deleteRoute(id);
-        webSocketController.notifyRouteChange(new RouteUpdateDTO("DELETE", id));
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        String message = ex.getMessage();
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-
-        if (message.contains("not found")) {
-            status = HttpStatus.NOT_FOUND;
-        } else if (message.contains("permission")) {
-            status = HttpStatus.FORBIDDEN;
-        }
-
-        return new ResponseEntity<>(message, status);
-    }
-
+    /**
+     * Convert Route entity to RouteDTO
+     *
+     * @param route the Route entity
+     * @return the RouteDTO
+     */
     private RouteDTO convertToDTO(Route route) {
         RouteDTO dto = new RouteDTO();
         dto.setId(route.getId());
         dto.setName(route.getName());
         dto.setCoordinates(convertToDTO(route.getCoordinates()));
-        dto.setCreationDate(route.getCreationDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        dto.setCreationDate(route.getCreationDate().format(DateTimeFormatter.ISO_DATE_TIME));
         dto.setFrom(convertToDTO(route.getFrom()));
-        if (route.getTo() != null) {
-            dto.setTo(convertToDTO(route.getTo()));
-        }
+        dto.setTo(route.getTo() != null ? convertToDTO(route.getTo()) : null);
         dto.setDistance(route.getDistance());
         dto.setRating(route.getRating());
+        dto.setCreatedById(route.getCreatedBy().getId());
+        dto.setCreatedByUsername(route.getCreatedBy().getUsername());
         return dto;
     }
 
+    /**
+     * Convert RouteDTO to Route entity
+     *
+     * @param dto the RouteDTO
+     * @return the Route entity
+     */
     private Route convertToEntity(RouteDTO dto) {
         Route route = new Route();
         route.setName(dto.getName());
         route.setCoordinates(convertToEntity(dto.getCoordinates()));
         route.setFrom(convertToEntity(dto.getFrom()));
-        if (dto.getTo() != null) {
-            route.setTo(convertToEntity(dto.getTo()));
-        }
+        route.setTo(dto.getTo() != null ? convertToEntity(dto.getTo()) : null);
         route.setDistance(dto.getDistance());
         route.setRating(dto.getRating());
         return route;
     }
 
+    /**
+     * Convert Coordinates entity to CoordinatesDTO
+     *
+     * @param coordinates the Coordinates entity
+     * @return the CoordinatesDTO
+     */
     private CoordinatesDTO convertToDTO(Coordinates coordinates) {
         CoordinatesDTO dto = new CoordinatesDTO();
         dto.setX(coordinates.getX());
@@ -119,6 +150,12 @@ public class RouteController {
         return dto;
     }
 
+    /**
+     * Convert CoordinatesDTO to Coordinates entity
+     *
+     * @param dto the CoordinatesDTO
+     * @return the Coordinates entity
+     */
     private Coordinates convertToEntity(CoordinatesDTO dto) {
         Coordinates coordinates = new Coordinates();
         coordinates.setX(dto.getX());
@@ -126,23 +163,31 @@ public class RouteController {
         return coordinates;
     }
 
+    /**
+     * Convert Location entity to LocationDTO
+     *
+     * @param location the Location entity
+     * @return the LocationDTO
+     */
     private LocationDTO convertToDTO(Location location) {
         LocationDTO dto = new LocationDTO();
-        dto.setId(location.getId());
+        dto.setName(location.getName());
         dto.setX(location.getX());
         dto.setY(location.getY());
-        dto.setName(location.getName());
         return dto;
     }
 
+    /**
+     * Convert LocationDTO to Location entity
+     *
+     * @param dto the LocationDTO
+     * @return the Location entity
+     */
     private Location convertToEntity(LocationDTO dto) {
         Location location = new Location();
-        if (dto.getId() != null) {
-            location.setId(dto.getId());
-        }
+        location.setName(dto.getName());
         location.setX(dto.getX());
         location.setY(dto.getY());
-        location.setName(dto.getName());
         return location;
     }
 }

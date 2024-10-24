@@ -9,8 +9,11 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+    /**
+     * Handle IllegalArgumentExceptions
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         String message = ex.getMessage();
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
@@ -18,24 +21,29 @@ public class GlobalExceptionHandler {
             status = HttpStatus.NOT_FOUND;
         } else if (message.contains("permission")) {
             status = HttpStatus.FORBIDDEN;
+        } else if (message.contains("already")) {
+            status = HttpStatus.CONFLICT;
         }
 
         ErrorResponse error = new ErrorResponse(
                 status.value(),
                 message,
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
 
         return new ResponseEntity<>(error, status);
     }
 
-    // Handle other exception types as needed
-
+    /**
+     * Handle all other exceptions
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "An unexpected error occurred",
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
