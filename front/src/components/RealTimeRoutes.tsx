@@ -12,9 +12,6 @@ const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
   useEffect(() => {
     const newClient = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-      connectHeaders: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
       debug: function (str) {
         console.log(str);
       },
