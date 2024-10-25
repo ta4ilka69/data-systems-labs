@@ -36,9 +36,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors().and()
-                // Disable CSRF for stateless APIs
-                .csrf(csrf -> csrf.disable())
+                .cors().and().csrf(csrf -> csrf.disable())
 
                 // Set session management to stateless
                 .sessionManagement(session -> session
@@ -46,12 +44,10 @@ public class SecurityConfig {
 
                 // Set authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**","/ws/**").permitAll() // Allow auth endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
-                        .requestMatchers("/api/routes/**").hasAnyRole("USER", "ADMIN") // Route endpoints
+                        .requestMatchers("/api/auth/**", "/ws/**", "/topic/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/routes/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
-
-                // Add JWT token filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -69,11 +65,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:8080"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

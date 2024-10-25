@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 interface RealTimeRoutesProps {
   onUpdate: () => void;
@@ -11,9 +11,9 @@ const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
 
   useEffect(() => {
     const newClient = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
       connectHeaders: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       debug: function (str) {
         console.log(str);
@@ -24,16 +24,16 @@ const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
     });
 
     newClient.onConnect = () => {
-      console.log('Connected to STOMP');
-      newClient.subscribe('/topic/routes', message => {
-        console.log('Received:', message.body);
+      console.log("Connected to STOMP");
+      newClient.subscribe("/topic/routes", (message) => {
+        console.log("Received:", message.body);
         onUpdate();
       });
     };
 
     newClient.onStompError = function (frame) {
-      console.log('Broker reported error: ' + frame.headers['message']);
-      console.log('Additional details: ' + frame.body);
+      console.log("Broker reported error: " + frame.headers["message"]);
+      console.log("Additional details: " + frame.body);
     };
 
     newClient.activate();
