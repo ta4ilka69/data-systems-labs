@@ -3,7 +3,6 @@ package itmo.labs.controller;
 import itmo.labs.dto.CoordinatesDTO;
 import itmo.labs.dto.LocationDTO;
 import itmo.labs.dto.RouteDTO;
-import itmo.labs.dto.RouteUpdateDTO;
 import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
@@ -35,8 +34,8 @@ public class RouteController {
     public ResponseEntity<RouteDTO> createRoute(@Valid @RequestBody RouteDTO routeDTO) {
         Route route = convertToEntity(routeDTO);
         Route createdRoute = routeService.createRoute(route);
-        RouteDTO responseDTO = convertToDTO(createdRoute);
-        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
+        RouteDTO createdRouteDTO = convertToDTO(createdRoute);
+        return new ResponseEntity<>(createdRouteDTO, HttpStatus.CREATED);
     }
 
     /**
@@ -46,61 +45,44 @@ public class RouteController {
      */
     @GetMapping
     public ResponseEntity<List<RouteDTO>> getAllRoutes() {
-        List<Route> routes = routeService.getAllRoutes();
-        List<RouteDTO> routeDTOs = routes.stream()
+        List<RouteDTO> routes = routeService.getAllRoutes()
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(routeDTOs, HttpStatus.OK);
-    }
-
-    /**
-     * Get a Route by ID
-     *
-     * @param id the Route ID
-     * @return the Route
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<RouteDTO> getRouteById(@PathVariable Integer id) {
-        Route route = routeService.getRouteById(id);
-        RouteDTO routeDTO = convertToDTO(route);
-        return new ResponseEntity<>(routeDTO, HttpStatus.OK);
+        return new ResponseEntity<>(routes, HttpStatus.OK);
     }
 
     /**
      * Update a Route
      *
-     * @param id          the Route ID
-     * @param routeUpdate the Route update data
+     * @param id         the Route ID
+     * @param routeDTO   the updated Route data
      * @return the updated Route
      */
     @PutMapping("/{id}")
     public ResponseEntity<RouteDTO> updateRoute(@PathVariable Integer id,
-                                                @Valid @RequestBody RouteUpdateDTO routeUpdate) {
-        Route updatedRoute = null;
-        if ("update".equalsIgnoreCase(routeUpdate.getAction())) {
-            Route routeDetails = convertToEntity(routeUpdate.getRouteDTO());
-            updatedRoute = routeService.updateRoute(id, routeDetails);
-        } else {
-            throw new IllegalArgumentException("Invalid action: " + routeUpdate.getAction());
-        }
-        RouteDTO responseDTO = convertToDTO(updatedRoute);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+                                                @Valid @RequestBody RouteDTO routeDTO) {
+        Route updatedRoute = routeService.updateRoute(id, convertToEntity(routeDTO));
+        RouteDTO updatedRouteDTO = convertToDTO(updatedRoute);
+        return new ResponseEntity<>(updatedRouteDTO, HttpStatus.OK);
     }
 
     /**
      * Delete a Route
      *
      * @param id the Route ID
-     * @return no content
+     * @return success message
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoute(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteRoute(@PathVariable Integer id) {
         routeService.deleteRoute(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Route deleted successfully.", HttpStatus.OK);
     }
 
+    // Conversion methods...
+
     /**
-     * Convert Route entity to RouteDTO
+     * Convert Route to RouteDTO
      *
      * @param route the Route entity
      * @return the RouteDTO
@@ -117,6 +99,34 @@ public class RouteController {
         dto.setRating(route.getRating());
         dto.setCreatedById(route.getCreatedBy().getId());
         dto.setCreatedByUsername(route.getCreatedBy().getUsername());
+        dto.setAllowAdminEditing(route.isAllowAdminEditing());
+        return dto;
+    }
+
+    /**
+     * Convert Coordinates entity to CoordinatesDTO
+     *
+     * @param coordinates the Coordinates entity
+     * @return the CoordinatesDTO
+     */
+    private CoordinatesDTO convertToDTO(Coordinates coordinates) {
+        CoordinatesDTO dto = new CoordinatesDTO();
+        dto.setX(coordinates.getX());
+        dto.setY(coordinates.getY());
+        return dto;
+    }
+
+    /**
+     * Convert Location entity to LocationDTO
+     *
+     * @param location the Location entity
+     * @return the LocationDTO
+     */
+    private LocationDTO convertToDTO(Location location) {
+        LocationDTO dto = new LocationDTO();
+        dto.setName(location.getName());
+        dto.setX(location.getX());
+        dto.setY(location.getY());
         return dto;
     }
 
@@ -134,20 +144,8 @@ public class RouteController {
         route.setTo(dto.getTo() != null ? convertToEntity(dto.getTo()) : null);
         route.setDistance(dto.getDistance());
         route.setRating(dto.getRating());
+        route.setAllowAdminEditing(dto.isAllowAdminEditing());
         return route;
-    }
-
-    /**
-     * Convert Coordinates entity to CoordinatesDTO
-     *
-     * @param coordinates the Coordinates entity
-     * @return the CoordinatesDTO
-     */
-    private CoordinatesDTO convertToDTO(Coordinates coordinates) {
-        CoordinatesDTO dto = new CoordinatesDTO();
-        dto.setX(coordinates.getX());
-        dto.setY(coordinates.getY());
-        return dto;
     }
 
     /**
@@ -161,20 +159,6 @@ public class RouteController {
         coordinates.setX(dto.getX());
         coordinates.setY(dto.getY());
         return coordinates;
-    }
-
-    /**
-     * Convert Location entity to LocationDTO
-     *
-     * @param location the Location entity
-     * @return the LocationDTO
-     */
-    private LocationDTO convertToDTO(Location location) {
-        LocationDTO dto = new LocationDTO();
-        dto.setName(location.getName());
-        dto.setX(location.getX());
-        dto.setY(location.getY());
-        return dto;
     }
 
     /**

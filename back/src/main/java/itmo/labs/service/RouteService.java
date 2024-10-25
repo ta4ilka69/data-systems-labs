@@ -3,19 +3,18 @@ package itmo.labs.service;
 import itmo.labs.dto.CoordinatesDTO;
 import itmo.labs.dto.LocationDTO;
 import itmo.labs.dto.RouteDTO;
-import itmo.labs.model.Coordinates;
-import itmo.labs.model.Location;
-import itmo.labs.model.Route;
-import itmo.labs.model.Role;
-import itmo.labs.model.User;
+import itmo.labs.model.*;
 import itmo.labs.repository.CoordinatesRepository;
 import itmo.labs.repository.LocationRepository;
+import itmo.labs.repository.RouteAuditRepository;
 import itmo.labs.repository.RouteRepository;
 import itmo.labs.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -28,60 +27,78 @@ public class RouteService {
     private final LocationRepository locationRepository;
     private final CoordinatesRepository coordinatesRepository;
     private final UserRepository userRepository;
+    private final RouteAuditRepository routeAuditRepository;
 
+    @Autowired
     public RouteService(RouteRepository routeRepository,
             LocationRepository locationRepository,
             CoordinatesRepository coordinatesRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            RouteAuditRepository routeAuditRepository) {
         this.routeRepository = routeRepository;
         this.locationRepository = locationRepository;
         this.coordinatesRepository = coordinatesRepository;
         this.userRepository = userRepository;
+        this.routeAuditRepository = routeAuditRepository;
     }
 
+    /**
+     * Create a new Route
+     *
+     * @param route the Route entity
+     * @return the created Route
+     */
     public Route createRoute(Route route) {
         // Retrieve the currently authenticated user
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
+        // Set the creator
         route.setCreatedBy(currentUser);
+        route.setCreationDate(LocalDateTime.now());
 
-        return routeRepository.save(route);
+        Route createdRoute = routeRepository.save(route);
+
+        // Create audit log
+        RouteAudit audit = new RouteAudit();
+        audit.setRoute(createdRoute);
+        audit.setOperationType(OperationType.CREATE);
+        audit.setTimestamp(LocalDateTime.now());
+        audit.setPerformedBy(currentUser);
+        audit.setDescription("Route created with ID: " + createdRoute.getId());
+        routeAuditRepository.save(audit);
+
+        return createdRoute;
     }
 
-    public Route getRouteById(Integer id) {
-        return routeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Route not found with id: " + id));
-    }
-
-    public List<Route> getAllRoutes() {
-        return routeRepository.findAll();
-    }
-
+    /**
+     * Update an existing Route
+     *
+     * @param id           the Route ID
+     * @param routeDetails the Route data to update
+     * @return the updated Route
+     */
     public Route updateRoute(Integer id, Route routeDetails) {
         Route route = getRouteById(id);
 
-        // Retrieve the currently authenticated user
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
-        // Check if the current user is the creator
-        boolean isOwner = route.getCreatedBy().getId().equals(currentUser.getId());
-
-        // Check if the current user is an admin
+        // Check permissions
+        boolean isOwner = route.getCreatedBy().getId() == currentUser.getId();
         boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
 
         if (!isOwner && !isAdmin) {
             throw new IllegalArgumentException("You do not have permission to update this route.");
         }
 
-        // If the current user is admin, check if admin is allowed to modify this route
         if (isAdmin && !route.isAllowAdminEditing()) {
             throw new IllegalArgumentException("Admin is not allowed to modify this route.");
         }
 
+        // Update fields if provided
         if (routeDetails.getName() != null && !routeDetails.getName().isEmpty()) {
             route.setName(routeDetails.getName());
         }
@@ -130,23 +147,72 @@ public class RouteService {
         // Update the allowAdminEditing flag if specified
         route.setAllowAdminEditing(routeDetails.isAllowAdminEditing());
 
-        return routeRepository.save(route);
+        Route updatedRoute = routeRepository.save(route);
+
+        // Create audit log
+        RouteAudit audit = new RouteAudit();
+        audit.setRoute(updatedRoute);
+        audit.setOperationType(OperationType.UPDATE);
+        audit.setTimestamp(LocalDateTime.now());
+        audit.setPerformedBy(currentUser);
+        audit.setDescription("Route updated with ID: " + updatedRoute.getId());
+        routeAuditRepository.save(audit);
+
+        return updatedRoute;
     }
 
+    /**
+     * Delete a Route
+     *
+     * @param id the Route ID
+     */
     public void deleteRoute(Integer id) {
         Route route = getRouteById(id);
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
-        boolean isOwner = route.getCreatedBy().getId().equals(currentUser.getId());
+
+        boolean isOwner = route.getCreatedBy().getId() == currentUser.getId();
         boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
+
         if (!isOwner && !isAdmin) {
             throw new IllegalArgumentException("You do not have permission to delete this route.");
         }
+
         if (isAdmin && !route.isAllowAdminEditing()) {
             throw new IllegalArgumentException("Admin is not allowed to delete this route.");
         }
+
         routeRepository.delete(route);
+
+        // Create audit log
+        RouteAudit audit = new RouteAudit();
+        audit.setRoute(route);
+        audit.setOperationType(OperationType.DELETE);
+        audit.setTimestamp(LocalDateTime.now());
+        audit.setPerformedBy(currentUser);
+        audit.setDescription("Route deleted with ID: " + route.getId());
+        routeAuditRepository.save(audit);
+    }
+
+    /**
+     * Retrieve a Route by ID
+     *
+     * @param id the Route ID
+     * @return the Route
+     */
+    public Route getRouteById(Integer id) {
+        return routeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Route not found with ID: " + id));
+    }
+
+    /**
+     * Get all Routes
+     *
+     * @return list of Routes
+     */
+    public List<Route> getAllRoutes() {
+        return routeRepository.findAll();
     }
 
     /**
@@ -160,6 +226,21 @@ public class RouteService {
                 .filter(route -> route.getRating() == rating)
                 .collect(Collectors.toList());
         routeRepository.deleteAll(routesToDelete);
+
+        // Audit each deletion
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+
+        for (Route route : routesToDelete) {
+            RouteAudit audit = new RouteAudit();
+            audit.setRoute(route);
+            audit.setOperationType(OperationType.DELETE);
+            audit.setTimestamp(LocalDateTime.now());
+            audit.setPerformedBy(currentUser);
+            audit.setDescription("Route deleted with ID: " + route.getId());
+            routeAuditRepository.save(audit);
+        }
     }
 
     /**
@@ -193,7 +274,8 @@ public class RouteService {
      *
      * @param fromLocationName the name of the origin location
      * @param toLocationName   the name of the destination location
-     * @param sortBy           the parameter to sort by (e.g., "distance", "rating")
+     * @param sortBy           the parameter to sort by (e.g., "distance", "rating",
+     *                         "name")
      * @return sorted list of matching routes
      */
     public List<Route> findRoutesBetweenLocations(String fromLocationName, String toLocationName, String sortBy) {
@@ -236,6 +318,8 @@ public class RouteService {
         return createRoute(route);
     }
 
+    // Conversion methods...
+
     /**
      * Convert RouteDTO to Route entity
      *
@@ -250,7 +334,21 @@ public class RouteService {
         route.setTo(dto.getTo() != null ? convertToEntity(dto.getTo()) : null);
         route.setDistance(dto.getDistance());
         route.setRating(dto.getRating());
+        route.setAllowAdminEditing(dto.isAllowAdminEditing());
         return route;
+    }
+
+    /**
+     * Convert CoordinatesDTO to Coordinates entity
+     *
+     * @param dto the CoordinatesDTO
+     * @return the Coordinates entity
+     */
+    private Coordinates convertToEntity(CoordinatesDTO dto) {
+        Coordinates coordinates = new Coordinates();
+        coordinates.setX(dto.getX());
+        coordinates.setY(dto.getY());
+        return coordinates;
     }
 
     /**
@@ -265,18 +363,5 @@ public class RouteService {
         location.setX(dto.getX());
         location.setY(dto.getY());
         return location;
-    }
-
-    /**
-     * Convert CoordinatesDTO to Coordinates entity
-     *
-     * @param dto the CoordinatesDTO
-     * @return the Coordinates entity
-     */
-    private Coordinates convertToEntity(CoordinatesDTO dto) {
-        Coordinates coordinates = new Coordinates();
-        coordinates.setX(dto.getX());
-        coordinates.setY(dto.getY());
-        return coordinates;
     }
 }
