@@ -2,6 +2,7 @@ package itmo.labs.controller;
 
 import itmo.labs.dto.RegisterRequestDTO;
 import itmo.labs.dto.RegisterResponseDTO;
+import itmo.labs.dto.UserDTO;
 import itmo.labs.model.User;
 import itmo.labs.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -45,5 +46,10 @@ public class RegisterController {
     public ResponseEntity<String> requestAdminRole() {
         userService.requestAdminRole();
         return new ResponseEntity<>("Admin role request submitted successfully.", HttpStatus.OK);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getUserInfo(){
+        return ResponseEntity.ok(userService.getUsernameInfo());
     }
 }

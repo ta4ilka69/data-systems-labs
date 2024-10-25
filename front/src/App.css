@@ -40,3 +40,22 @@
 .read-the-docs {
   color: #888;
 }
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  z-index: 1000;
+}
+
+.user-info {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  background-color: #f0f0f0;
+}

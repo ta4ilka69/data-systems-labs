@@ -1,5 +1,6 @@
 package itmo.labs.service;
 
+import itmo.labs.dto.UserDTO;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.UserRepository;
@@ -123,5 +124,14 @@ public class UserService implements UserDetailsService {
     @Transactional
     public List<User> getAllAdminRoleRequests() {
         return userRepository.findByAdminRoleRequestedTrue();
+    }
+
+    @Transactional
+    public UserDTO getUsernameInfo() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+
+        return new UserDTO(currentUser.getId(), currentUser.getUsername(), currentUser.getRoles());
     }
 }

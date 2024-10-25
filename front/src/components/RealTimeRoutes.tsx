@@ -1,25 +1,27 @@
 import React, { useEffect } from "react";
 import useWebSocket from "../hooks/useWebSocket";
 
-const RealTimeRoutes: React.FC = () => {
-  const newRouteData = useWebSocket("ws://localhost:8080/api/routes/websocket");
+interface RealTimeRoutesProps {
+  onUpdate: () => void;
+}
+
+const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
+  const { data, error } = useWebSocket("ws://localhost:8080/api/routes");
 
   useEffect(() => {
-    if (newRouteData) {
-      console.log("New route data received:", newRouteData);
+    if (data) {
+      console.log("New route data received:", data);
+      onUpdate();
     }
-  }, [newRouteData]);
+  }, [data, onUpdate]);
 
-  return (
-    <div>
-      <h3>Real-Time Updates</h3>
-      {newRouteData && (
-        <div>
-          New Route Added: {newRouteData.name} - {newRouteData.distance} km
-        </div>
-      )}
-    </div>
-  );
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
+  }, [error]);
+
+  return null;
 };
 
 export default RealTimeRoutes;

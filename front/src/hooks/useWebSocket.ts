@@ -1,21 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 const useWebSocket = (url: string) => {
-   const [data, setData] = useState<any>(null);
-   useEffect(() => {
-       const socket = new WebSocket(url);
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-       socket.onmessage = (event) => {
-           const messageData = JSON.parse(event.data);
-           setData(messageData);
-       };
+  useEffect(() => {
+    const socket = new WebSocket(url);
 
-       return () => {
-           socket.close();
-       };
-   }, [url]);
+    socket.onopen = () => {
+      console.log(`WebSocket connected to ${url}`);
+    };
 
-   return data;
+    socket.onmessage = (event) => {
+      try {
+        const messageData = JSON.parse(event.data);
+        setData(messageData);
+      } catch (e) {
+        console.error("Failed to parse WebSocket message:", e);
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      setError("WebSocket connection error");
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [url]);
+
+  return { data, error };
 };
 
 export default useWebSocket;
