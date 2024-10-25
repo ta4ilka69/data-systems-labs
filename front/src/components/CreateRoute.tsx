@@ -49,15 +49,12 @@ const CreateRoute: React.FC<CreateRouteProps> = ({ onClose, onCreate }) => {
     const allowAdminEditing = currentUserRole === "ADMIN";
 
     const newRoute: RouteDTO = {
-      id: 0,
       name,
       distance,
       rating,
       coordinates,
       from,
       to,
-      createdById: parseInt(localStorage.getItem("userId") || "0"),
-      createdByUsername: localStorage.getItem("username") || "",
       allowAdminEditing,
     };
 

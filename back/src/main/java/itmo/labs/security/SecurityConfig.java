@@ -46,7 +46,7 @@ public class SecurityConfig {
 
                 // Set authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
+                        .requestMatchers("/api/auth/**","/ws/**").permitAll() // Allow auth endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
                         .requestMatchers("/api/routes/**").hasAnyRole("USER", "ADMIN") // Route endpoints
                         .anyRequest().authenticated())

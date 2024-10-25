@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { loginUser } from "../api/authService";
 import { AuthRequestDTO, UserDTO } from "../types";
@@ -10,7 +10,11 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
+  useEffect(() => {
+    if (localStorage.getItem("token")!==null) {
+      navigate("/routes");
+    }
+  }, [navigate]);
   const handleLogin = async () => {
     const authRequest: AuthRequestDTO = { username, password };
     try {
