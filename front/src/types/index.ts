@@ -42,3 +42,9 @@ export interface RegisterResponseDTO {
   username: string;
   roles: string[];
 }
+
+export interface UserDTO {
+  id: number;
+  username: string;
+  roles: string[];
+}
