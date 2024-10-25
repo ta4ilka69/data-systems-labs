@@ -1,5 +1,6 @@
 package itmo.labs.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,8 +21,9 @@ public class RouteDTO {
     private String creationDate; // ISO 8601 format
 
     @NotNull(message = "Origin location cannot be null")
+    @Valid
     private LocationDTO from;
-
+    @Valid
     private LocationDTO to;
 
     @Min(value = 2, message = "Distance must be greater than 1")

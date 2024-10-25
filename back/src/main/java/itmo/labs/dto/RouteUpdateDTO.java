@@ -1,5 +1,6 @@
 package itmo.labs.dto;
 
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import lombok.Setter;
 public class RouteUpdateDTO {
     private String action;
     private Integer routeId;
+    @Valid
     private RouteDTO routeDTO;
 
     public RouteUpdateDTO() {

@@ -2,6 +2,7 @@ package itmo.labs.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,8 +28,8 @@ public class User {
     @NotBlank(message = "Username cannot be null or empty")
     @Column(unique = true, nullable = false)
     private String username;
-
     @NotBlank(message = "Password cannot be null or empty")
+    @Size(min = 5, message = "Password must be at least 5 characters long")
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)

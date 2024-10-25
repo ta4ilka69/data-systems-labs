@@ -1,6 +1,6 @@
 package itmo.labs.dto;
 
-import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +12,6 @@ public class CoordinatesDTO {
     private Float x;
 
     @NotNull(message = "Y coordinate cannot be null")
-    @Max(value = 552, message = "Y coordinate must be less than or equal to 552")
+    @DecimalMax(value = "552.0", inclusive = true, message = "Y coordinate must be less than or equal to 552")
     private Double y;
 }

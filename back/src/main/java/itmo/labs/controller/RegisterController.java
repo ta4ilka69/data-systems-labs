@@ -31,7 +31,7 @@ public class RegisterController {
     public ResponseEntity<RegisterResponseDTO> registerUser(@Valid @RequestBody RegisterRequestDTO registerRequest) {
         User user = userService.registerNewUser(registerRequest.getUsername(),
                 registerRequest.getPassword(),
-                false); // Users who register are not admins by default
+                false);
 
         RegisterResponseDTO response = new RegisterResponseDTO(user.getId(), user.getUsername(), user.getRoles());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
