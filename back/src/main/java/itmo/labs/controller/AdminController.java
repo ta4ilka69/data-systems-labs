@@ -159,10 +159,7 @@ public class AdminController {
      * @return the CoordinatesDTO
      */
     private CoordinatesDTO convertToDTO(Coordinates coordinates) {
-        CoordinatesDTO dto = new CoordinatesDTO();
-        dto.setX(coordinates.getX());
-        dto.setY(coordinates.getY());
-        return dto;
+        return new CoordinatesDTO(coordinates.getX(), coordinates.getY());
     }
 
     /**
@@ -172,10 +169,6 @@ public class AdminController {
      * @return the LocationDTO
      */
     private LocationDTO convertToDTO(Location location) {
-        LocationDTO dto = new LocationDTO();
-        dto.setName(location.getName());
-        dto.setX(location.getX());
-        dto.setY(location.getY());
-        return dto;
+        return new LocationDTO(location.getId(), location.getX(), location.getY(), location.getName());
     }
 }

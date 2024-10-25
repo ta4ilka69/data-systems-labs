@@ -8,14 +8,17 @@ interface RealTimeRoutesProps {
 
 const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
   const [client, setClient] = useState<Client | null>(null);
-
+  const token = localStorage.getItem("token");
   useEffect(() => {
     const newClient = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
       debug: function (str) {
         console.log(str);
       },
-      reconnectDelay: 5000,
+      reconnectDelay: 1000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });

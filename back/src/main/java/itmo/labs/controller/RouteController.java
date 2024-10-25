@@ -7,6 +7,7 @@ import itmo.labs.model.Coordinates;
 import itmo.labs.model.Location;
 import itmo.labs.model.Route;
 import itmo.labs.service.RouteService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class RouteController {
     @Autowired
     private RouteService routeService;
 
+
     /**
      * Create a new Route
      *
@@ -32,8 +34,7 @@ public class RouteController {
      */
     @PostMapping
     public ResponseEntity<RouteDTO> createRoute(@Valid @RequestBody RouteDTO routeDTO) {
-        Route route = convertToEntity(routeDTO);
-        Route createdRoute = routeService.createRoute(route);
+        Route createdRoute = routeService.createRoute(routeDTO);
         RouteDTO createdRouteDTO = convertToDTO(createdRoute);
         return new ResponseEntity<>(createdRouteDTO, HttpStatus.CREATED);
     }
@@ -55,14 +56,14 @@ public class RouteController {
     /**
      * Update a Route
      *
-     * @param id         the Route ID
-     * @param routeDTO   the updated Route data
+     * @param id       the Route ID
+     * @param routeDTO the updated Route data
      * @return the updated Route
      */
     @PutMapping("/{id}")
     public ResponseEntity<RouteDTO> updateRoute(@PathVariable Integer id,
-                                                @Valid @RequestBody RouteDTO routeDTO) {
-        Route updatedRoute = routeService.updateRoute(id, convertToEntity(routeDTO));
+            @Valid @RequestBody RouteDTO routeDTO) {
+        Route updatedRoute = routeService.updateRoute(id, routeDTO);
         RouteDTO updatedRouteDTO = convertToDTO(updatedRoute);
         return new ResponseEntity<>(updatedRouteDTO, HttpStatus.OK);
     }
@@ -128,50 +129,5 @@ public class RouteController {
         dto.setX(location.getX());
         dto.setY(location.getY());
         return dto;
-    }
-
-    /**
-     * Convert RouteDTO to Route entity
-     *
-     * @param dto the RouteDTO
-     * @return the Route entity
-     */
-    private Route convertToEntity(RouteDTO dto) {
-        Route route = new Route();
-        route.setName(dto.getName());
-        route.setCoordinates(convertToEntity(dto.getCoordinates()));
-        route.setFrom(convertToEntity(dto.getFrom()));
-        route.setTo(dto.getTo() != null ? convertToEntity(dto.getTo()) : null);
-        route.setDistance(dto.getDistance());
-        route.setRating(dto.getRating());
-        route.setAllowAdminEditing(dto.isAllowAdminEditing());
-        return route;
-    }
-
-    /**
-     * Convert CoordinatesDTO to Coordinates entity
-     *
-     * @param dto the CoordinatesDTO
-     * @return the Coordinates entity
-     */
-    private Coordinates convertToEntity(CoordinatesDTO dto) {
-        Coordinates coordinates = new Coordinates();
-        coordinates.setX(dto.getX());
-        coordinates.setY(dto.getY());
-        return coordinates;
-    }
-
-    /**
-     * Convert LocationDTO to Location entity
-     *
-     * @param dto the LocationDTO
-     * @return the Location entity
-     */
-    private Location convertToEntity(LocationDTO dto) {
-        Location location = new Location();
-        location.setName(dto.getName());
-        location.setX(dto.getX());
-        location.setY(dto.getY());
-        return location;
     }
 }

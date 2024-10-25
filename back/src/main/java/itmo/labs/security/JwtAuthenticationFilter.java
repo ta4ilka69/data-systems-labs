@@ -23,13 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        return path.startsWith("/ws") || path.startsWith("/topic");
-    }
-
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,

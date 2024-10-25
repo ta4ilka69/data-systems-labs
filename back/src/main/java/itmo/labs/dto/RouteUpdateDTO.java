@@ -1,25 +1,19 @@
 package itmo.labs.dto;
 
+import itmo.labs.model.OperationType;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class RouteUpdateDTO {
-    private String action;
+    private OperationType action;
     private Integer routeId;
     @Valid
     private RouteDTO routeDTO;
-
-    public RouteUpdateDTO() {
-    }
-
-    public RouteUpdateDTO(String action, Integer integer, RouteDTO routeDTO) {
-        this.action = action;
-        this.routeId = integer;
-        this.routeDTO = routeDTO;
-    }
 
     @Override
     public String toString() {

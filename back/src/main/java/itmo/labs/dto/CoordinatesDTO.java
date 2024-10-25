@@ -2,11 +2,14 @@ package itmo.labs.dto;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
+import lombok.NoArgsConstructor;
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CoordinatesDTO {
     @NotNull(message = "X coordinate cannot be null")
     private Float x;
