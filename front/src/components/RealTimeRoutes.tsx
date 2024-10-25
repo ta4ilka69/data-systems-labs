@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 interface RealTimeRoutesProps {
   onUpdate: () => void;
@@ -10,10 +11,9 @@ const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
 
   useEffect(() => {
     const newClient = new Client({
-      brokerURL: 'ws://localhost:8080/ws',
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       connectHeaders: {
-        login: 'user',
-        passcode: 'password',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       debug: function (str) {
         console.log(str);
@@ -41,7 +41,7 @@ const RealTimeRoutes: React.FC<RealTimeRoutesProps> = ({ onUpdate }) => {
     setClient(newClient);
 
     return () => {
-      if (newClient) {
+      if (newClient.active) {
         newClient.deactivate();
       }
     };
