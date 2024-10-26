@@ -11,7 +11,17 @@ const RouteManager: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [routesPerPage] = useState(8);
-  const [filter, setFilter] = useState("");
+
+  // Filter States
+  const [filterId, setFilterId] = useState<string>("");
+  const [filterName, setFilterName] = useState<string>("");
+  const [filterDistance, setFilterDistance] = useState<string>("");
+  const [filterRating, setFilterRating] = useState<string>("");
+  const [filterFrom, setFilterFrom] = useState<string>("");
+  const [filterTo, setFilterTo] = useState<string>("");
+  const [filterCreatedBy, setFilterCreatedBy] = useState<string>("");
+  const [filterEditable, setFilterEditable] = useState<string>("");
+
   const [sortConfig, setSortConfig] = useState<{
     key: keyof RouteDTO | "coordinates" | "from" | "to" | "createdByUsername";
     direction: "ascending" | "descending";
@@ -60,9 +70,51 @@ const RouteManager: React.FC = () => {
     setSortConfig({ key, direction });
   };
 
-  const filteredRoutes = routes.filter((route) =>
-    route.name.toLowerCase().includes(filter.toLowerCase())
-  );
+  const filteredRoutes = routes.filter((route) => {
+    const matchesId = filterId
+      ? route.id?.toString().includes(filterId) || false
+      : true;
+    const matchesName = filterName
+      ? route.name.toLowerCase().includes(filterName.toLowerCase())
+      : true;
+    const matchesDistance = filterDistance
+      ? route.distance?.toString().includes(filterDistance)
+      : true;
+    const matchesRating = filterRating
+      ? route.rating.toString().includes(filterRating)
+      : true;
+    const matchesFrom = filterFrom
+      ? route.from.name.toLowerCase().includes(filterFrom.toLowerCase())
+      : true;
+    const matchesTo = filterTo
+      ? route.to
+        ? route.to.name.toLowerCase().includes(filterTo.toLowerCase())
+        : false
+      : true;
+    const matchesCreatedBy = filterCreatedBy
+      ? route.createdByUsername
+        ? route.createdByUsername
+          .toLowerCase()
+          .includes(filterCreatedBy.toLowerCase())
+        : false
+      : true;
+    const matchesEditable = filterEditable
+      ? filterEditable === "Yes"
+        ? route.allowAdminEditing
+        : !route.allowAdminEditing
+      : true;
+
+    return (
+      matchesId &&
+      matchesName &&
+      matchesDistance &&
+      matchesRating &&
+      matchesFrom &&
+      matchesTo &&
+      matchesCreatedBy &&
+      matchesEditable
+    );
+  });
 
   const sortedRoutes = React.useMemo(() => {
     if (sortConfig !== null) {
@@ -74,12 +126,12 @@ const RouteManager: React.FC = () => {
           aValue = `${a.coordinates.x},${a.coordinates.y}`;
           bValue = `${b.coordinates.x},${b.coordinates.y}`;
         } else if (sortConfig.key === "from" || sortConfig.key === "to") {
-          aValue = `${a[sortConfig.key]?.name || ""} (${
-            a[sortConfig.key]?.x
-          }, ${a[sortConfig.key]?.y})`;
-          bValue = `${b[sortConfig.key]?.name || ""} (${
-            b[sortConfig.key]?.x
-          }, ${b[sortConfig.key]?.y})`;
+          aValue = `${a[sortConfig.key]?.name || ""} (${a[
+            sortConfig.key
+          ]?.x}, ${a[sortConfig.key]?.y})`;
+          bValue = `${b[sortConfig.key]?.name || ""} (${b[
+            sortConfig.key
+          ]?.x}, ${b[sortConfig.key]?.y})`;
         } else {
           aValue = a[sortConfig.key];
           bValue = b[sortConfig.key];
@@ -99,7 +151,10 @@ const RouteManager: React.FC = () => {
 
   const indexOfLastRoute = currentPage * routesPerPage;
   const indexOfFirstRoute = indexOfLastRoute - routesPerPage;
-  const currentRoutes = sortedRoutes.slice(indexOfFirstRoute, indexOfLastRoute);
+  const currentRoutes = sortedRoutes.slice(
+    indexOfFirstRoute,
+    indexOfLastRoute
+  );
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -107,12 +162,76 @@ const RouteManager: React.FC = () => {
     <div className="route-manager">
       <h1>Route Manager</h1>
       <button onClick={() => setShowCreate(true)}>Create New Route</button>
-      <input
-        type="text"
-        placeholder="Filter by Name"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-      />
+
+      {/* Filter Section */}
+      <div className="filters">
+        <h3>Filters</h3>
+        <input
+          type="text"
+          placeholder="Filter by ID"
+          value={filterId}
+          onChange={(e) => setFilterId(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Filter by Name"
+          value={filterName}
+          onChange={(e) => setFilterName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Filter by Distance"
+          value={filterDistance}
+          onChange={(e) => setFilterDistance(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Filter by Rating"
+          value={filterRating}
+          onChange={(e) => setFilterRating(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Filter by From Location"
+          value={filterFrom}
+          onChange={(e) => setFilterFrom(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Filter by To Location"
+          value={filterTo}
+          onChange={(e) => setFilterTo(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Filter by Created By"
+          value={filterCreatedBy}
+          onChange={(e) => setFilterCreatedBy(e.target.value)}
+        />
+        <select
+          value={filterEditable}
+          onChange={(e) => setFilterEditable(e.target.value)}
+        >
+          <option value="">All</option>
+          <option value="Yes">Editable</option>
+          <option value="No">Not Editable</option>
+        </select>
+        <button
+          onClick={() => {
+            setFilterId("");
+            setFilterName("");
+            setFilterDistance("");
+            setFilterRating("");
+            setFilterFrom("");
+            setFilterTo("");
+            setFilterCreatedBy("");
+            setFilterEditable("");
+          }}
+        >
+          Reset Filters
+        </button>
+      </div>
+
       <table>
         <thead>
           <tr>
@@ -124,7 +243,9 @@ const RouteManager: React.FC = () => {
             <th onClick={() => handleSort("from")}>From</th>
             <th onClick={() => handleSort("to")}>To</th>
             <th onClick={() => handleSort("allowAdminEditing")}>Editable</th>
-            <th onClick={() => handleSort("createdByUsername")}>Created By</th>
+            <th onClick={() => handleSort("createdByUsername")}>
+              Created By
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
