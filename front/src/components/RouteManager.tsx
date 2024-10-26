@@ -13,7 +13,7 @@ const RouteManager: React.FC = () => {
   const [routesPerPage] = useState(8);
   const [filter, setFilter] = useState("");
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof RouteDTO;
+    key: keyof RouteDTO | "coordinates" | "from" | "to" | "createdByUsername";
     direction: "ascending" | "descending";
   } | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<RouteDTO | null>(null);
@@ -46,7 +46,9 @@ const RouteManager: React.FC = () => {
     }
   };
 
-  const handleSort = (key: keyof RouteDTO) => {
+  const handleSort = (
+    key: keyof RouteDTO | "coordinates" | "from" | "to" | "createdByUsername"
+  ) => {
     let direction: "ascending" | "descending" = "ascending";
     if (
       sortConfig &&
@@ -65,11 +67,22 @@ const RouteManager: React.FC = () => {
   const sortedRoutes = React.useMemo(() => {
     if (sortConfig !== null) {
       return [...filteredRoutes].sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
+        let aValue: any;
+        let bValue: any;
 
-        if (aValue === undefined || bValue === undefined) {
-          return 0;
+        if (sortConfig.key === "coordinates") {
+          aValue = `${a.coordinates.x},${a.coordinates.y}`;
+          bValue = `${b.coordinates.x},${b.coordinates.y}`;
+        } else if (sortConfig.key === "from" || sortConfig.key === "to") {
+          aValue = `${a[sortConfig.key]?.name || ""} (${
+            a[sortConfig.key]?.x
+          }, ${a[sortConfig.key]?.y})`;
+          bValue = `${b[sortConfig.key]?.name || ""} (${
+            b[sortConfig.key]?.x
+          }, ${b[sortConfig.key]?.y})`;
+        } else {
+          aValue = a[sortConfig.key];
+          bValue = b[sortConfig.key];
         }
 
         if (aValue < bValue) {
@@ -107,11 +120,11 @@ const RouteManager: React.FC = () => {
             <th onClick={() => handleSort("name")}>Name</th>
             <th onClick={() => handleSort("distance")}>Distance (km)</th>
             <th onClick={() => handleSort("rating")}>Rating</th>
-            <th>Coordinates</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Editable</th>
-            <th>Created By</th>
+            <th onClick={() => handleSort("coordinates")}>Coordinates</th>
+            <th onClick={() => handleSort("from")}>From</th>
+            <th onClick={() => handleSort("to")}>To</th>
+            <th onClick={() => handleSort("allowAdminEditing")}>Editable</th>
+            <th onClick={() => handleSort("createdByUsername")}>Created By</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -123,8 +136,12 @@ const RouteManager: React.FC = () => {
               <td>{route.distance}</td>
               <td>{route.rating}</td>
               <td>{`(${route.coordinates.x}, ${route.coordinates.y})`}</td>
-              <td>{route.from.name}</td>
-              <td>{route.to?.name || "N/A"}</td>
+              <td>{`${route.from.name} (${route.from.x}, ${route.from.y})`}</td>
+              <td>
+                {route.to
+                  ? `${route.to.name} (${route.to.x}, ${route.to.y})`
+                  : "N/A"}
+              </td>
               <td>{route.allowAdminEditing ? "Yes" : "No"}</td>
               <td>{route.createdByUsername}</td>
               <td>
