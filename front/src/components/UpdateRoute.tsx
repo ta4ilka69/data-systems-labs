@@ -24,6 +24,9 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
   const [toX, setToX] = useState<number>(route.to?.x || 0);
   const [toY, setToY] = useState<number>(route.to?.y || 0);
   const [toName, setToName] = useState(route.to?.name || "");
+  const [allowAdminEditing, setAllowAdminEditing] = useState(
+    route.allowAdminEditing
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
@@ -43,6 +46,10 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
       setError("From location name cannot be empty.");
       return;
     }
+    if (yCoord >= 552) {
+      setError("Y Coordinate must be less than 552.");
+      return;
+    }
 
     const coordinates: CoordinatesDTO = { x: xCoord, y: yCoord };
     const from: LocationDTO = { x: fromX, y: fromY, name: fromName };
@@ -58,6 +65,7 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
       coordinates,
       from,
       to,
+      allowAdminEditing,
     };
 
     try {
@@ -67,6 +75,10 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
     } catch (err) {
       setError("Failed to update route.");
     }
+  };
+
+  const handleNumberInput = (value: string) => {
+    return parseFloat(value) || 0;
   };
 
   return (
@@ -81,39 +93,39 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
       <input
         type="number"
         value={distance}
-        onChange={(e) => setDistance(Number(e.target.value))}
+        onChange={(e) => setDistance(handleNumberInput(e.target.value))}
         placeholder="Distance (km)"
       />
       <input
         type="number"
         value={rating}
-        onChange={(e) => setRating(Number(e.target.value))}
+        onChange={(e) => setRating(handleNumberInput(e.target.value))}
         placeholder="Rating"
       />
       <h4>Coordinates</h4>
       <input
         type="number"
         value={xCoord}
-        onChange={(e) => setXCoord(Number(e.target.value))}
+        onChange={(e) => setXCoord(handleNumberInput(e.target.value))}
         placeholder="X Coordinate"
       />
       <input
         type="number"
         value={yCoord}
-        onChange={(e) => setYCoord(Number(e.target.value))}
-        placeholder="Y Coordinate"
+        onChange={(e) => setYCoord(handleNumberInput(e.target.value))}
+        placeholder="Y Coordinate (max 552)"
       />
       <h4>From Location</h4>
       <input
         type="number"
         value={fromX}
-        onChange={(e) => setFromX(Number(e.target.value))}
+        onChange={(e) => setFromX(handleNumberInput(e.target.value))}
         placeholder="From X"
       />
       <input
         type="number"
         value={fromY}
-        onChange={(e) => setFromY(Number(e.target.value))}
+        onChange={(e) => setFromY(handleNumberInput(e.target.value))}
         placeholder="From Y"
       />
       <input
@@ -126,13 +138,13 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
       <input
         type="number"
         value={toX}
-        onChange={(e) => setToX(Number(e.target.value))}
+        onChange={(e) => setToX(handleNumberInput(e.target.value))}
         placeholder="To X"
       />
       <input
         type="number"
         value={toY}
-        onChange={(e) => setToY(Number(e.target.value))}
+        onChange={(e) => setToY(handleNumberInput(e.target.value))}
         placeholder="To Y"
       />
       <input
@@ -141,6 +153,16 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
         onChange={(e) => setToName(e.target.value)}
         placeholder="To Location Name"
       />
+      <div>
+        <label>
+          Allow Admin Editing:
+          <input
+            type="checkbox"
+            checked={allowAdminEditing}
+            onChange={(e) => setAllowAdminEditing(e.target.checked)}
+          />
+        </label>
+      </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <button onClick={handleSubmit}>Update</button>
       <button onClick={onClose}>Cancel</button>

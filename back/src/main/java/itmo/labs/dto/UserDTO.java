@@ -13,4 +13,5 @@ public class UserDTO {
     private Integer id;
     private String username;
     private Set<Role> roles;
+    private boolean adminRoleRequested;
 }

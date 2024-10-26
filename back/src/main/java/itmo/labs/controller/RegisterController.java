@@ -29,6 +29,7 @@ public class RegisterController {
      */
     @PostMapping("/register")
     public ResponseEntity<RegisterResponseDTO> registerUser(@Valid @RequestBody RegisterRequestDTO registerRequest) {
+        
         User user = userService.registerNewUser(registerRequest.getUsername(),
                 registerRequest.getPassword(),
                 false);
@@ -49,7 +50,7 @@ public class RegisterController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getUserInfo(){
+    public ResponseEntity<UserDTO> getUserInfo() {
         return ResponseEntity.ok(userService.getUsernameInfo());
     }
 }

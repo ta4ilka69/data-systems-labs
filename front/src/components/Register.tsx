@@ -11,6 +11,10 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
 
   const handleRegister = async () => {
+    if (password.length < 5) {
+      setMessage("Password must be at least 5 characters long.");
+      return;
+    }
     const registerRequest: RegisterRequestDTO = { username, password };
     try {
       await registerUser(registerRequest);
@@ -18,8 +22,26 @@ const Register: React.FC = () => {
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (err) {
-      setMessage("Registration failed. Please try again.");
+    } catch (err: unknown) {
+      if (
+        err instanceof Error &&
+        "response" in err &&
+        typeof err.response === "object" &&
+        err.response !== null
+      ) {
+        if (
+          "data" in err.response &&
+          typeof err.response.data === "object" &&
+          err.response.data !== null &&
+          "message" in err.response.data
+        ) {
+          setMessage(err.response.data.message as string);
+        } else {
+          setMessage("An error occurred during registration.");
+        }
+      } else {
+        setMessage("An unexpected error occurred. Please try again.");
+      }
     }
   };
 

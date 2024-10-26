@@ -4,6 +4,7 @@ import {
   AuthResponseDTO,
   RegisterRequestDTO,
   RegisterResponseDTO,
+  UserDTO,
 } from "../types";
 
 export const loginUser = async (
@@ -23,5 +24,18 @@ export const registerUser = async (registerRequest: RegisterRequestDTO) => {
 
 export const requestAdminRole = async () => {
   const response = await api.post<string>("/auth/request-admin-role");
+  await getUser();
   return response.data;
+};
+
+export const getUser = async () => {
+  const response = await api.get<UserDTO>("/auth/me");
+  const user = response.data;
+  localStorage.setItem("username", user.username);
+  localStorage.setItem("role", user.roles.includes("ADMIN") ? "ADMIN" : "USER");
+  localStorage.setItem("userId", user.id.toString());
+  localStorage.setItem(
+    "adminRoleRequested",
+    user.adminRoleRequested.toString()
+  );
 };

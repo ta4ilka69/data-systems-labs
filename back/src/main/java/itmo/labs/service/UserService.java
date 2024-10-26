@@ -132,6 +132,7 @@ public class UserService implements UserDetailsService {
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
-        return new UserDTO(currentUser.getId(), currentUser.getUsername(), currentUser.getRoles());
+        return new UserDTO(currentUser.getId(), currentUser.getUsername(), currentUser.getRoles(),
+                currentUser.isAdminRoleRequested());
     }
 }

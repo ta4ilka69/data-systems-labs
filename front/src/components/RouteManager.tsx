@@ -4,11 +4,13 @@ import { RouteDTO } from "../types";
 import RealTimeRoutes from "./RealTimeRoutes";
 import CreateRoute from "./CreateRoute";
 import UpdateRoute from "./UpdateRoute";
+import "./RouteManager.css";
 
 const RouteManager: React.FC = () => {
   const [routes, setRoutes] = useState<RouteDTO[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [routesPerPage] = useState(10);
+  const [routesPerPage] = useState(8);
   const [filter, setFilter] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof RouteDTO;
@@ -30,6 +32,7 @@ const RouteManager: React.FC = () => {
       setRoutes(routeList);
     } catch (err) {
       console.error("Failed to fetch routes", err);
+      setError("Failed to fetch routes.");
     }
   };
 
@@ -39,6 +42,7 @@ const RouteManager: React.FC = () => {
       setRoutes(routes.filter((route) => route.id !== id));
     } catch (err) {
       console.error("Failed to delete route", err);
+      setError("You do not have permission to delete this route.");
     }
   };
 
@@ -54,47 +58,42 @@ const RouteManager: React.FC = () => {
     setSortConfig({ key, direction });
   };
 
+  const filteredRoutes = routes.filter((route) =>
+    route.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
   const sortedRoutes = React.useMemo(() => {
-    let sortableRoutes = [...routes];
     if (sortConfig !== null) {
-      sortableRoutes.sort((a, b) => {
-        if (a[sortConfig.key]! < b[sortConfig.key]!) {
+      return [...filteredRoutes].sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === undefined || bValue === undefined) {
+          return 0;
+        }
+
+        if (aValue < bValue) {
           return sortConfig.direction === "ascending" ? -1 : 1;
         }
-        if (a[sortConfig.key]! > b[sortConfig.key]!) {
+        if (aValue > bValue) {
           return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
       });
     }
-    return sortableRoutes;
-  }, [routes, sortConfig]);
+    return filteredRoutes;
+  }, [filteredRoutes, sortConfig]);
 
-  const filteredRoutes = sortedRoutes.filter((route) =>
-    route.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  // Pagination Logic
   const indexOfLastRoute = currentPage * routesPerPage;
   const indexOfFirstRoute = indexOfLastRoute - routesPerPage;
-  const currentRoutes = filteredRoutes.slice(
-    indexOfFirstRoute,
-    indexOfLastRoute
-  );
-  const totalPages = Math.ceil(filteredRoutes.length / routesPerPage);
+  const currentRoutes = sortedRoutes.slice(indexOfFirstRoute, indexOfLastRoute);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div>
-      <h2>Route Manager</h2>
-      <div>
-        <button onClick={() => setShowCreate(true)}>Create New Route</button>
-        {showCreate && (
-          <CreateRoute
-            onClose={() => setShowCreate(false)}
-            onCreate={fetchRoutes}
-          />
-        )}
-      </div>
+    <div className="route-manager">
+      <h1>Route Manager</h1>
+      <button onClick={() => setShowCreate(true)}>Create New Route</button>
       <input
         type="text"
         placeholder="Filter by Name"
@@ -108,6 +107,10 @@ const RouteManager: React.FC = () => {
             <th onClick={() => handleSort("name")}>Name</th>
             <th onClick={() => handleSort("distance")}>Distance (km)</th>
             <th onClick={() => handleSort("rating")}>Rating</th>
+            <th>Coordinates</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Editable</th>
             <th>Created By</th>
             <th>Actions</th>
           </tr>
@@ -119,39 +122,42 @@ const RouteManager: React.FC = () => {
               <td>{route.name}</td>
               <td>{route.distance}</td>
               <td>{route.rating}</td>
+              <td>{`(${route.coordinates.x}, ${route.coordinates.y})`}</td>
+              <td>{route.from.name}</td>
+              <td>{route.to?.name || "N/A"}</td>
+              <td>{route.allowAdminEditing ? "Yes" : "No"}</td>
               <td>{route.createdByUsername}</td>
               <td>
-                {(route.createdById === currentUserId ||
-                  currentUserRole === "ADMIN") && (
-                  <>
-                    <button onClick={() => setSelectedRoute(route)}>
-                      Edit
-                    </button>
-                    <button onClick={() => handleDelete(route.id!)}>
-                      Delete
-                    </button>
-                  </>
-                )}
+                <>
+                  {(route.createdById === currentUserId ||
+                    currentUserRole === "ADMIN") &&
+                    route.allowAdminEditing && (
+                      <button onClick={() => setSelectedRoute(route)}>
+                        Edit
+                      </button>
+                    )}
+                  <button onClick={() => handleDelete(route.id!)}>
+                    Delete
+                  </button>{" "}
+                </>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {/* Pagination Controls */}
-      <div>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-          (pageNumber) => (
-            <button
-              key={pageNumber}
-              onClick={() => setCurrentPage(pageNumber)}
-              disabled={currentPage === pageNumber}
-            >
-              {pageNumber}
-            </button>
-          )
-        )}
-      </div>
-      {/* Update Route Modal */}
+      <Pagination
+        routesPerPage={routesPerPage}
+        totalRoutes={sortedRoutes.length}
+        paginate={paginate}
+        currentPage={currentPage}
+        error={error}
+      />
+      {showCreate && (
+        <CreateRoute
+          onClose={() => setShowCreate(false)}
+          onCreate={fetchRoutes}
+        />
+      )}
       {selectedRoute && (
         <UpdateRoute
           route={selectedRoute}
@@ -159,9 +165,37 @@ const RouteManager: React.FC = () => {
           onUpdate={fetchRoutes}
         />
       )}
-      {/* Real-Time Updates */}
       <RealTimeRoutes onUpdate={fetchRoutes} />
     </div>
+  );
+};
+
+const Pagination: React.FC<{
+  routesPerPage: number;
+  totalRoutes: number;
+  paginate: (pageNumber: number) => void;
+  currentPage: number;
+  error: string | null;
+}> = ({ routesPerPage, totalRoutes, paginate, currentPage, error }) => {
+  const pageNumbers = [];
+
+  for (let i = 1; i <= Math.ceil(totalRoutes / routesPerPage); i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <nav>
+      <ul className="pagination">
+        {pageNumbers.map((number) => (
+          <li key={number} className={number === currentPage ? "active" : ""}>
+            <a onClick={() => paginate(number)} href="#!">
+              {number}
+            </a>
+          </li>
+        ))}
+      </ul>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+    </nav>
   );
 };
 

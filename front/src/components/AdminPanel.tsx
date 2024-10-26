@@ -4,6 +4,7 @@ import {
   approveAdminRoleRequest,
 } from "../api/adminService";
 import { UserDTO } from "../types";
+import "./AdminPanel.css";
 
 const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<UserDTO[]>([]);
@@ -25,7 +26,6 @@ const AdminPanel: React.FC = () => {
   const handleApprove = async (userId: number) => {
     try {
       await approveAdminRoleRequest(userId);
-      // Re-fetch the user list to reflect changes from the backend
       const updatedUsers = await getAllAdminRoleRequests();
       setUsers(updatedUsers);
     } catch (err) {
@@ -35,21 +35,33 @@ const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="admin-panel">
       <h2>Admin Panel</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            {user.username} - Roles: {user.roles.join(", ")}
-            {!user.roles.includes("ADMIN") && (
-              <button onClick={() => handleApprove(user.id)}>
-                Approve as Admin
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Roles</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user.id}>
+              <td>{user.username}</td>
+              <td>{user.roles.join(", ")}</td>
+              <td>
+                {!user.roles.includes("ADMIN") && (
+                  <button onClick={() => handleApprove(user.id)}>
+                    Approve as Admin
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

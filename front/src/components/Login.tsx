@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { loginUser } from "../api/authService";
-import { AuthRequestDTO, UserDTO } from "../types";
+import { getUser, loginUser } from "../api/authService";
+import { AuthRequestDTO} from "../types";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/axios";
 import "./Auth.css";
 
 const Login: React.FC = () => {
@@ -22,18 +21,12 @@ const Login: React.FC = () => {
     try {
       const { token } = await loginUser(authRequest);
       localStorage.setItem("token", token);
-      const response = await api.get<UserDTO>("/auth/me");
-      const user = response.data;
-      localStorage.setItem("username", user.username);
-      localStorage.setItem(
-        "role",
-        user.roles.includes("ADMIN") ? "ADMIN" : "USER"
-      );
-      localStorage.setItem("userId", user.id.toString());
+      await getUser();
       setError(null);
       navigate("/routes");
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
+      console.log(err);
+      setError("Login failed. Check your username and password.");
     }
   };
 
