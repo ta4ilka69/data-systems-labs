@@ -8,7 +8,7 @@ import {
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
-import { getAllRoutes } from "../api/routeService";
+import { getAllRoutes, updateRoute } from "../api/routeService";
 import { RouteDTO } from "../types";
 import "./MapView.css";
 
@@ -46,6 +46,13 @@ const convertToLatLng = (x: number, y: number): [number, number] => {
   const lat = (y / 552) * 180 - 90; // Map y to -90 to 90
   const lng = (x / 552) * 360 - 180; // Map x to -180 to 180
   return [lat, lng];
+};
+
+// Function to convert latitude and longitude back to x, y
+const convertToXY = (lat: number, lng: number): [number, number] => {
+  const y = ((lat + 90) / 180) * 552;
+  const x = ((lng + 180) / 360) * 552;
+  return [x, y];
 };
 
 // Function to center the map on the user's location
@@ -94,6 +101,33 @@ const MapView: React.FC = () => {
     }
   }, []);
 
+  const handleMarkerDragEnd = async (
+    route: RouteDTO,
+    position: [number, number],
+    isFrom: boolean
+  ) => {
+    const [x, y] = convertToXY(position[0], position[1]);
+    const updatedRoute = { ...route };
+
+    if (isFrom) {
+      updatedRoute.from.x = x;
+      updatedRoute.from.y = y;
+    } else if (updatedRoute.to) {
+      updatedRoute.to.x = x;
+      updatedRoute.to.y = y;
+    }
+
+    try {
+      await updateRoute(updatedRoute);
+      setRoutes((prevRoutes) =>
+        prevRoutes.map((r) => (r.id === route.id ? updatedRoute : r))
+      );
+    } catch (err) {
+      console.error("Failed to update route", err);
+      setError("Failed to update route.");
+    }
+  };
+
   return (
     <MapContainer
       center={[51.505, -0.09]} // Default center; adjust as needed
@@ -127,8 +161,46 @@ const MapView: React.FC = () => {
                 </Popup>
               </Polyline>
             )}
-            {!to && (
-              <Marker position={from}>
+            <Marker
+              position={from}
+              draggable={true}
+              eventHandlers={{
+                dragend: (e) => {
+                  const marker = e.target;
+                  const position = marker.getLatLng();
+                  handleMarkerDragEnd(
+                    route,
+                    [position.lat, position.lng],
+                    true
+                  );
+                },
+              }}
+            >
+              <Popup>
+                <div>
+                  <h3>{route.name}</h3>
+                  <p>Distance: {route.distance} km</p>
+                  <p>Rating: {route.rating}</p>
+                  <p>Created by: {route.createdByUsername}</p>
+                </div>
+              </Popup>
+            </Marker>
+            {to && (
+              <Marker
+                position={to}
+                draggable={true}
+                eventHandlers={{
+                  dragend: (e) => {
+                    const marker = e.target;
+                    const position = marker.getLatLng();
+                    handleMarkerDragEnd(
+                      route,
+                      [position.lat, position.lng],
+                      false
+                    );
+                  },
+                }}
+              >
                 <Popup>
                   <div>
                     <h3>{route.name}</h3>
