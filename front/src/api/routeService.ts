@@ -1,5 +1,5 @@
 import api from "./axios";
-import { CoordinatesDTO, RouteDTO } from "../types";
+import { CoordinatesDTO, LocationDTO, RouteDTO } from "../types";
 
 export const getAllRoutes = async (): Promise<RouteDTO[]> => {
   const response = await api.get<RouteDTO[]>("/routes");
@@ -25,5 +25,10 @@ export const deleteRoute = async (id: number): Promise<void> => {
 
 export const getAllCoordinates = async (): Promise<CoordinatesDTO[]> => {
   const response = await api.get<CoordinatesDTO[]>("/coordinates");
+  return response.data;
+};
+
+export const getAllLocations = async (): Promise<LocationDTO[]> => {
+  const response = await api.get<LocationDTO[]>("/locations");
   return response.data;
 };

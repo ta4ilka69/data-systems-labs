@@ -21,9 +21,32 @@ const Header: React.FC = () => {
             Routes
           </Link>
           {role === "ADMIN" && (
-            <Link to="/admin" className="nav-link">
-              Admin
-            </Link>
+            <>
+              <Link to="/admin" className="nav-link">
+                Admin
+              </Link>
+              <button
+                onClick={() => navigate("/find-routes")}
+                className="nav-link"
+              >
+                Find Routes
+              </button>
+              <button
+                onClick={() => navigate("/get-routes-by-rating")}
+                className="nav-link"
+              >
+                Get Routes By Rating
+              </button>
+              <button
+                onClick={() => navigate("/delete-routes-by-rating")}
+                className="nav-link"
+              >
+                Delete Routes By Rating
+              </button>
+              <button onClick={() => navigate("/map")} className="nav-link">
+                View Map
+              </button>
+            </>
           )}
           {role === "USER" &&
             localStorage.getItem("adminRoleRequested") !== "true" && (

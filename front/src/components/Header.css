@@ -12,14 +12,22 @@
   gap: 1rem;
 }
 
-.nav-link {
+.nav-link,
+.request-admin-button {
+  background-color: #007bff;
   color: white;
-  text-decoration: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
   font-weight: bold;
 }
 
-.nav-link:hover {
-  text-decoration: underline;
+.nav-link:hover,
+.request-admin-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
 }
 
 .user-info {
@@ -35,8 +43,10 @@
   padding: 0.5rem 1rem;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
 }
 
 .logout-button:hover {
   background-color: #e60000;
+  transform: scale(1.05);
 }

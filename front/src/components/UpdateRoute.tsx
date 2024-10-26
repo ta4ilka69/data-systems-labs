@@ -1,5 +1,9 @@
-import React, { useState } from "react";
-import { updateRoute } from "../api/routeService";
+import React, { useState, useEffect } from "react";
+import {
+  updateRoute,
+  getAllLocations,
+  getAllCoordinates,
+} from "../api/routeService";
 import { RouteDTO, CoordinatesDTO, LocationDTO } from "../types";
 
 interface UpdateRouteProps {
@@ -28,6 +32,33 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
     route.allowAdminEditing
   );
   const [error, setError] = useState<string | null>(null);
+  const [existingLocations, setExistingLocations] = useState<LocationDTO[]>([]);
+  const [existingCoordinates, setExistingCoordinates] = useState<
+    CoordinatesDTO[]
+  >([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const locations = await getAllLocations();
+        setExistingLocations(locations);
+      } catch (err) {
+        console.error("Failed to fetch locations", err);
+      }
+    };
+
+    const fetchCoordinates = async () => {
+      try {
+        const coordinates = await getAllCoordinates();
+        setExistingCoordinates(coordinates);
+      } catch (err) {
+        console.error("Failed to fetch coordinates", err);
+      }
+    };
+
+    fetchLocations();
+    fetchCoordinates();
+  }, []);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -103,6 +134,24 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
         placeholder="Rating"
       />
       <h4>Coordinates</h4>
+      <select
+        onChange={(e) => {
+          const selectedCoordinate = existingCoordinates.find(
+            (coord) => `${coord.x},${coord.y}` === e.target.value
+          );
+          if (selectedCoordinate) {
+            setXCoord(selectedCoordinate.x);
+            setYCoord(selectedCoordinate.y);
+          }
+        }}
+      >
+        <option value="">Select Existing Coordinates</option>
+        {existingCoordinates.map((coord) => (
+          <option key={`${coord.x},${coord.y}`} value={`${coord.x},${coord.y}`}>
+            ({coord.x}, {coord.y})
+          </option>
+        ))}
+      </select>
       <input
         type="number"
         value={xCoord}
@@ -116,6 +165,25 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
         placeholder="Y Coordinate (max 552)"
       />
       <h4>From Location</h4>
+      <select
+        onChange={(e) => {
+          const selectedLocation = existingLocations.find(
+            (loc) => loc.name === e.target.value
+          );
+          if (selectedLocation) {
+            setFromX(selectedLocation.x);
+            setFromY(selectedLocation.y);
+            setFromName(selectedLocation.name);
+          }
+        }}
+      >
+        <option value="">Select Existing Location</option>
+        {existingLocations.map((loc) => (
+          <option key={loc.name} value={loc.name}>
+            {loc.name} ({loc.x}, {loc.y})
+          </option>
+        ))}
+      </select>
       <input
         type="number"
         value={fromX}
@@ -135,6 +203,25 @@ const UpdateRoute: React.FC<UpdateRouteProps> = ({
         placeholder="From Location Name"
       />
       <h4>To Location (Optional)</h4>
+      <select
+        onChange={(e) => {
+          const selectedLocation = existingLocations.find(
+            (loc) => loc.name === e.target.value
+          );
+          if (selectedLocation) {
+            setToX(selectedLocation.x);
+            setToY(selectedLocation.y);
+            setToName(selectedLocation.name);
+          }
+        }}
+      >
+        <option value="">Select Existing Location</option>
+        {existingLocations.map((loc) => (
+          <option key={loc.name} value={loc.name}>
+            {loc.name} ({loc.x}, {loc.y})
+          </option>
+        ))}
+      </select>
       <input
         type="number"
         value={toX}

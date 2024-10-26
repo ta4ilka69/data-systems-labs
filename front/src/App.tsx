@@ -11,6 +11,10 @@ import RouteManager from "./components/RouteManager";
 import AdminPanel from "./components/AdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
+import FindRoutesBetweenLocations from "./components/FindRoutesBetweenLocations";
+import GetRoutesByRatingLessThan from "./components/GetRoutesByRatingLessThan";
+import DeleteRoutesByRating from "./components/DeleteRoutesByRating";
+import MapView from "./components/MapView";
 
 const App: React.FC = () => {
   return (
@@ -28,11 +32,44 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/routes" element={<RouteManager />} />
+        <Route
+          path="/find-routes"
+          element={
+            <ProtectedRoute role={["ADMIN"]}>
+              <FindRoutesBetweenLocations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/get-routes-by-rating"
+          element={
+            <ProtectedRoute role={["ADMIN"]}>
+              <GetRoutesByRatingLessThan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/delete-routes-by-rating"
+          element={
+            <ProtectedRoute role={["ADMIN"]}>
+              <DeleteRoutesByRating />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin"
           element={
             <ProtectedRoute role={["ADMIN"]}>
               <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/map"
+          element={
+            <ProtectedRoute role={["USER", "ADMIN"]}>
+              <MapView />
             </ProtectedRoute>
           }
         />
