@@ -25,7 +25,6 @@ public class RouteController {
     @Autowired
     private RouteService routeService;
 
-
     /**
      * Create a new Route
      *
@@ -37,6 +36,53 @@ public class RouteController {
         Route createdRoute = routeService.createRoute(routeDTO);
         RouteDTO createdRouteDTO = convertToDTO(createdRoute);
         return new ResponseEntity<>(createdRouteDTO, HttpStatus.CREATED);
+    }
+
+    /**
+     * Delete all routes with a specific rating
+     *
+     * @param rating the rating to match
+     * @return success message
+     */
+    @DeleteMapping("/rating/{rating}")
+    public ResponseEntity<String> deleteRoutesByRating(@PathVariable int rating) {
+        routeService.deleteRoutesByRating(rating);
+        return new ResponseEntity<>("Routes with rating " + rating + " deleted successfully.", HttpStatus.OK);
+    }
+
+    /**
+     * Get all routes with rating less than the specified value
+     *
+     * @param rating the rating threshold
+     * @return list of matching routes
+     */
+    @GetMapping("/ratingLessThan/{rating}")
+    public ResponseEntity<List<RouteDTO>> getRoutesByRatingLessThan(@PathVariable int rating) {
+        List<Route> routes = routeService.getRoutesByRatingLessThan(rating);
+        List<RouteDTO> routeDTOs = routes.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(routeDTOs, HttpStatus.OK);
+    }
+        /**
+     * Find routes between specified locations with sorting
+     *
+     * @param fromLocation the name of the origin location
+     * @param toLocation   the name of the destination location
+     * @param sortBy       the parameter to sort by (e.g., "distance", "rating",
+     *                     "name")
+     * @return sorted list of matching routes
+     */
+    @GetMapping("/searchBetweenLocations")
+    public ResponseEntity<List<RouteDTO>> findRoutesBetweenLocations(
+            @RequestParam String fromLocation,
+            @RequestParam String toLocation,
+            @RequestParam String sortBy) {
+        List<Route> routes = routeService.findRoutesBetweenLocations(fromLocation, toLocation, sortBy);
+        List<RouteDTO> routeDTOs = routes.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(routeDTOs, HttpStatus.OK);
     }
 
     /**

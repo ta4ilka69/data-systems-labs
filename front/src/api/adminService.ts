@@ -9,7 +9,7 @@ export const getAllAdminRoleRequests = async (): Promise<UserDTO[]> => {
 export const approveAdminRoleRequest = async (
   userId: number
 ): Promise<void> => {
-  await api.post(`/admin/approve-admin-role/${userId}`);
+  await api.post(`/approve-admin-role/${userId}`);
 };
 
 export const findRoutesBetweenLocations = async (
@@ -18,7 +18,7 @@ export const findRoutesBetweenLocations = async (
   sortBy: string
 ): Promise<RouteDTO[]> => {
   const response = await api.get<RouteDTO[]>(
-    `/admin/routes/searchBetweenLocations`,
+    `/routes/searchBetweenLocations`,
     { params: { fromLocation, toLocation, sortBy } }
   );
   return response.data;
@@ -28,11 +28,11 @@ export const getRoutesByRatingLessThan = async (
   rating: number
 ): Promise<RouteDTO[]> => {
   const response = await api.get<RouteDTO[]>(
-    `/admin/routes/ratingLessThan/${rating}`
+    `/routes/ratingLessThan/${rating}`
   );
   return response.data;
 };
 
 export const deleteRoutesByRating = async (rating: number): Promise<void> => {
-  await api.delete(`/admin/routes/rating/${rating}`);
+  await api.delete(`/routes/rating/${rating}`);
 };

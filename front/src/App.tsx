@@ -36,7 +36,7 @@ const App: React.FC = () => {
         <Route
           path="/find-routes"
           element={
-            <ProtectedRoute role={["ADMIN"]}>
+            <ProtectedRoute role={["USER", "ADMIN"]}>
               <FindRoutesBetweenLocations />
             </ProtectedRoute>
           }
@@ -44,7 +44,7 @@ const App: React.FC = () => {
         <Route
           path="/get-routes-by-rating"
           element={
-            <ProtectedRoute role={["ADMIN"]}>
+            <ProtectedRoute role={["USER", "ADMIN"]}>
               <GetRoutesByRatingLessThan />
             </ProtectedRoute>
           }
@@ -52,7 +52,7 @@ const App: React.FC = () => {
         <Route
           path="/delete-routes-by-rating"
           element={
-            <ProtectedRoute role={["ADMIN"]}>
+            <ProtectedRoute role={["USER", "ADMIN"]}>
               <DeleteRoutesByRating />
             </ProtectedRoute>
           }
@@ -60,7 +60,7 @@ const App: React.FC = () => {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute role={["ADMIN"]}>
+            <ProtectedRoute role={["USER", "ADMIN"]}>
               <AdminPanel />
             </ProtectedRoute>
           }

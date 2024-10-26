@@ -20,7 +20,7 @@ const Header: React.FC = () => {
           <Link to="/routes" className="nav-link">
             Routes
           </Link>
-          {role === "ADMIN" && (
+          {role && (
             <>
               <Link to="/admin" className="nav-link">
                 Admin

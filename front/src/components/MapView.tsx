@@ -106,6 +106,11 @@ const MapView: React.FC = () => {
     position: [number, number],
     isFrom: boolean
   ) => {
+    if (!route.allowAdminEditing) {
+      // Route is not editable; do nothing
+      return;
+    }
+
     const [x, y] = convertToXY(position[0], position[1]);
     const updatedRoute = { ...route };
 
@@ -163,18 +168,22 @@ const MapView: React.FC = () => {
             )}
             <Marker
               position={from}
-              draggable={true}
-              eventHandlers={{
-                dragend: (e) => {
-                  const marker = e.target;
-                  const position = marker.getLatLng();
-                  handleMarkerDragEnd(
-                    route,
-                    [position.lat, position.lng],
-                    true
-                  );
-                },
-              }}
+              draggable={route.allowAdminEditing}
+              eventHandlers={
+                route.allowAdminEditing
+                  ? {
+                    dragend: (e) => {
+                      const marker = e.target;
+                      const position = marker.getLatLng();
+                      handleMarkerDragEnd(
+                        route,
+                        [position.lat, position.lng],
+                        true
+                      );
+                    },
+                  }
+                  : {}
+              }
             >
               <Popup>
                 <div>
@@ -188,18 +197,22 @@ const MapView: React.FC = () => {
             {to && (
               <Marker
                 position={to}
-                draggable={true}
-                eventHandlers={{
-                  dragend: (e) => {
-                    const marker = e.target;
-                    const position = marker.getLatLng();
-                    handleMarkerDragEnd(
-                      route,
-                      [position.lat, position.lng],
-                      false
-                    );
-                  },
-                }}
+                draggable={route.allowAdminEditing}
+                eventHandlers={
+                  route.allowAdminEditing
+                    ? {
+                      dragend: (e) => {
+                        const marker = e.target;
+                        const position = marker.getLatLng();
+                        handleMarkerDragEnd(
+                          route,
+                          [position.lat, position.lng],
+                          false
+                        );
+                      },
+                    }
+                    : {}
+                }
               >
                 <Popup>
                   <div>

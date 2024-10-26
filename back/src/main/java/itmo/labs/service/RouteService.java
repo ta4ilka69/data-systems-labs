@@ -228,16 +228,16 @@ public class RouteService {
      * @param rating the rating to match
      */
     public void deleteRoutesByRating(int rating) {
-        List<Route> routesToDelete = routeRepository.findAll()
-                .stream()
-                .filter(route -> route.getRating() == rating)
-                .collect(Collectors.toList());
-        routeRepository.deleteAll(routesToDelete);
-
-        // Audit each deletion
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+        List<Route> routesToDelete = routeRepository.findAll()
+                .stream()
+                .filter(route -> route.getRating() == rating)
+                .filter(route-> route.getCreatedBy().getId() == currentUser.getId())
+                .collect(Collectors.toList());
+        routeRepository.deleteAll(routesToDelete);
+        routeWebSocketController.notifyRouteChange(new RouteUpdateDTO(OperationType.DELETE, 0, null));
 
         for (Route route : routesToDelete) {
             RouteAudit audit = new RouteAudit();
