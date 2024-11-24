@@ -1,0 +1,31 @@
+routes:
+  - name: "Route A"
+    coordinates:
+      x: 10
+      y: 20
+    from:
+      name: "Origin City"
+      x: -10
+      y: 20
+    to:
+      name: "Destination City"
+      x: -50
+      y: 12
+    distance: 150
+    rating: 5
+    allowAdminEditing: true
+  - name: "Route B"
+    coordinates:
+      x: 15
+      y: 25
+    from:
+      name: "Origin Town"
+      x: 11
+      y: 21
+    to:
+      name: "Destination Town"
+      x: 31
+      y: 41
+    distance: 160
+    rating: 4
+    allowAdminEditing: false
