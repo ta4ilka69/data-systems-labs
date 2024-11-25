@@ -1,5 +1,6 @@
 import api from "./axios";
 import { CoordinatesDTO, LocationDTO, RouteDTO } from "../types";
+import { ImportHistory } from "../types/ImportHistory";
 
 export const getAllRoutes = async (): Promise<RouteDTO[]> => {
   const response = await api.get<RouteDTO[]>("/routes");
@@ -30,5 +31,22 @@ export const getAllCoordinates = async (): Promise<CoordinatesDTO[]> => {
 
 export const getAllLocations = async (): Promise<LocationDTO[]> => {
   const response = await api.get<LocationDTO[]>("/locations");
+  return response.data;
+};
+
+export const importRoutes = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await api.post("/api/routes/import", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data;
+};
+export const getImportHistory = async (): Promise<ImportHistory[]> => {
+  const response = await api.get<ImportHistory[]>("/import");
   return response.data;
 };

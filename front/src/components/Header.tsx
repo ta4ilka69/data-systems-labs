@@ -38,6 +38,18 @@ const Header: React.FC = () => {
                 Get Routes By Rating
               </button>
               <button
+                onClick={() => navigate("/import")}
+                className="nav-link"
+              >
+                Import
+              </button>
+              <button
+                onClick={() => navigate("/import-history")}
+                className="nav-link"
+              >
+                Import History
+              </button>
+              <button
                 onClick={() => navigate("/delete-routes-by-rating")}
                 className="nav-link"
               >

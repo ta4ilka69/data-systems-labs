@@ -1,0 +1,25 @@
+.import-routes {
+    padding: 2rem;
+  }
+  
+  .import-routes h2 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .import-routes input[type="file"] {
+    margin-bottom: 1rem;
+  }
+  
+  .import-routes button {
+    padding: 0.5rem 1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .import-routes button:hover {
+    background-color: #218838;
+  }

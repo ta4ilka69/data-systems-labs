@@ -15,6 +15,8 @@ import FindRoutesBetweenLocations from "./components/FindRoutesBetweenLocations"
 import GetRoutesByRatingLessThan from "./components/GetRoutesByRatingLessThan";
 import DeleteRoutesByRating from "./components/DeleteRoutesByRating";
 import MapView from "./components/MapView";
+import ImportRoutes from "./components/ImportRoutes";
+import ImportHistory from "./components/ImportHistory";
 
 const App: React.FC = () => {
   return (
@@ -32,7 +34,22 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/routes" element={<RouteManager />} />
+        <Route
+          path="/import"
+          element={
+            <ProtectedRoute role={["ADMIN", "USER"]}>
+              <ImportRoutes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/import-history"
+          element={
+            <ProtectedRoute role={["USER", "ADMIN"]}>
+              <ImportHistory />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/find-routes"
           element={
@@ -60,7 +77,7 @@ const App: React.FC = () => {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute role={["USER", "ADMIN"]}>
+            <ProtectedRoute role={["ADMIN"]}>
               <AdminPanel />
             </ProtectedRoute>
           }

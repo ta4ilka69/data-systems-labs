@@ -1,0 +1,33 @@
+.import-history {
+    padding: 2rem;
+  }
+  
+  .import-history h2 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .import-history table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  
+  .import-history th,
+  .import-history td {
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: left;
+  }
+  
+  .import-history th {
+    background-color: #f4f4f4;
+  }
+  
+  .import-history tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .import-history tr:hover {
+    background-color: #f1f1f1;
+  }
