@@ -22,7 +22,7 @@ public class Location {
     private float x;
 
     @NotNull(message = "Y coordinate cannot be null")
-    private Integer y;
+    private float y;
 
     @NotBlank(message = "Location name cannot be null or empty")
     @Column(name = "location_name", nullable = false)
