@@ -1,6 +1,9 @@
 package itmo.labs.controller;
 
+import itmo.labs.dto.ImportHistoryUpdateDTO;
 import itmo.labs.service.RouteImportService;
+
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +38,20 @@ public class RouteImportController {
         } catch (Exception e) {
             return new ResponseEntity<>("Error importing routes: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    /**
+     * Endpoint для получения истории импорта.
+     * 
+     * Если пользователь имеет роль ADMIN, возвращает все записи.
+     * Иначе возвращает только записи, созданные текущим пользователем.
+     *
+     * @param authentication объект Authentication, предоставляемый Spring Security
+     * @return список историй импорта
+     */
+    @GetMapping("/import")
+    public ResponseEntity<List<ImportHistoryUpdateDTO>> getImportHistories() {
+        List<ImportHistoryUpdateDTO> dtoList = routeImportService.getImportHistory();
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 }

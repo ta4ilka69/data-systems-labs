@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +18,7 @@ import itmo.labs.dto.ImportHistoryUpdateDTO;
 import itmo.labs.dto.RouteDTO;
 import itmo.labs.model.ImportHistory;
 import itmo.labs.model.ImportHistory.ImportStatus;
+import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.ImportHistoryRepository;
 import itmo.labs.repository.RouteRepository;
@@ -112,5 +114,23 @@ public class RouteImportService {
         }
         importHistoryRepository.save(history);
         routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
+    }
+
+    public List<ImportHistoryUpdateDTO> getImportHistory() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+
+        List<ImportHistory> histories;
+
+        if (currentUser.getRoles().contains(Role.ADMIN)) {
+            histories = importHistoryRepository.findAll();
+        } else {
+            histories = importHistoryRepository.findByPerformedBy(currentUsername);
+        }
+        List<ImportHistoryUpdateDTO> dtoList = histories.stream()
+                .map(ImportHistoryUpdateDTO::new)
+                .collect(Collectors.toList());
+        return dtoList;
     }
 }
