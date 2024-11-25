@@ -1,10 +1,6 @@
 package itmo.labs.controller;
 
-import itmo.labs.dto.CoordinatesDTO;
-import itmo.labs.dto.LocationDTO;
 import itmo.labs.dto.RouteDTO;
-import itmo.labs.model.Coordinates;
-import itmo.labs.model.Location;
 import itmo.labs.model.Route;
 import itmo.labs.service.RouteService;
 
@@ -14,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +29,7 @@ public class RouteController {
     @PostMapping
     public ResponseEntity<RouteDTO> createRoute(@Valid @RequestBody RouteDTO routeDTO) {
         Route createdRoute = routeService.createRoute(routeDTO);
-        RouteDTO createdRouteDTO = convertToDTO(createdRoute);
+        RouteDTO createdRouteDTO = RouteDTO.convertToDTO(createdRoute);
         return new ResponseEntity<>(createdRouteDTO, HttpStatus.CREATED);
     }
 
@@ -60,7 +55,7 @@ public class RouteController {
     public ResponseEntity<List<RouteDTO>> getRoutesByRatingLessThan(@PathVariable int rating) {
         List<Route> routes = routeService.getRoutesByRatingLessThan(rating);
         List<RouteDTO> routeDTOs = routes.stream()
-                .map(this::convertToDTO)
+                .map(RouteDTO::convertToDTO)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(routeDTOs, HttpStatus.OK);
     }
@@ -80,7 +75,7 @@ public class RouteController {
             @RequestParam String sortBy) {
         List<Route> routes = routeService.findRoutesBetweenLocations(fromLocation, toLocation, sortBy);
         List<RouteDTO> routeDTOs = routes.stream()
-                .map(this::convertToDTO)
+                .map(RouteDTO::convertToDTO)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(routeDTOs, HttpStatus.OK);
     }
@@ -94,7 +89,7 @@ public class RouteController {
     public ResponseEntity<List<RouteDTO>> getAllRoutes() {
         List<RouteDTO> routes = routeService.getAllRoutes()
                 .stream()
-                .map(this::convertToDTO)
+                .map(RouteDTO::convertToDTO)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(routes, HttpStatus.OK);
     }
@@ -110,7 +105,7 @@ public class RouteController {
     public ResponseEntity<RouteDTO> updateRoute(@PathVariable Integer id,
             @Valid @RequestBody RouteDTO routeDTO) {
         Route updatedRoute = routeService.updateRoute(id, routeDTO);
-        RouteDTO updatedRouteDTO = convertToDTO(updatedRoute);
+        RouteDTO updatedRouteDTO = RouteDTO.convertToDTO(updatedRoute);
         return new ResponseEntity<>(updatedRouteDTO, HttpStatus.OK);
     }
 
@@ -124,56 +119,5 @@ public class RouteController {
     public ResponseEntity<String> deleteRoute(@PathVariable Integer id) {
         routeService.deleteRoute(id);
         return new ResponseEntity<>("Route deleted successfully.", HttpStatus.OK);
-    }
-
-    // Conversion methods...
-
-    /**
-     * Convert Route to RouteDTO
-     *
-     * @param route the Route entity
-     * @return the RouteDTO
-     */
-    private RouteDTO convertToDTO(Route route) {
-        RouteDTO dto = new RouteDTO();
-        dto.setId(route.getId());
-        dto.setName(route.getName());
-        dto.setCoordinates(convertToDTO(route.getCoordinates()));
-        dto.setCreationDate(route.getCreationDate().format(DateTimeFormatter.ISO_DATE_TIME));
-        dto.setFrom(convertToDTO(route.getFrom()));
-        dto.setTo(route.getTo() != null ? convertToDTO(route.getTo()) : null);
-        dto.setDistance(route.getDistance());
-        dto.setRating(route.getRating());
-        dto.setCreatedById(route.getCreatedBy().getId());
-        dto.setCreatedByUsername(route.getCreatedBy().getUsername());
-        dto.setAllowAdminEditing(route.isAllowAdminEditing());
-        return dto;
-    }
-
-    /**
-     * Convert Coordinates entity to CoordinatesDTO
-     *
-     * @param coordinates the Coordinates entity
-     * @return the CoordinatesDTO
-     */
-    private CoordinatesDTO convertToDTO(Coordinates coordinates) {
-        CoordinatesDTO dto = new CoordinatesDTO();
-        dto.setX(coordinates.getX());
-        dto.setY(coordinates.getY());
-        return dto;
-    }
-
-    /**
-     * Convert Location entity to LocationDTO
-     *
-     * @param location the Location entity
-     * @return the LocationDTO
-     */
-    private LocationDTO convertToDTO(Location location) {
-        LocationDTO dto = new LocationDTO();
-        dto.setName(location.getName());
-        dto.setX(location.getX());
-        dto.setY(location.getY());
-        return dto;
     }
 }

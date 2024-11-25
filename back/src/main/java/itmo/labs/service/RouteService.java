@@ -1,8 +1,6 @@
 package itmo.labs.service;
 
 import itmo.labs.controller.RouteWebSocketController;
-import itmo.labs.dto.CoordinatesDTO;
-import itmo.labs.dto.LocationDTO;
 import itmo.labs.dto.RouteDTO;
 import itmo.labs.dto.RouteUpdateDTO;
 import itmo.labs.model.*;
@@ -58,7 +56,7 @@ public class RouteService {
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
 
-        Route route = convertToEntity(routeDTO);
+        Route route = RouteDTO.convertToEntity(routeDTO);
         route.setCreatedBy(currentUser);
         route.setCreationDate(LocalDateTime.now());
 
@@ -108,7 +106,7 @@ public class RouteService {
             route.setName(routeDetails.getName());
         }
         if (routeDetails.getCoordinates() != null) {
-            Coordinates coordinates = convertToEntity(routeDetails.getCoordinates());
+            Coordinates coordinates = RouteDTO.convertToEntity(routeDetails.getCoordinates());
 
             // Ensure coordinates have valid data
             if (coordinates.getX() == null || coordinates.getY() == null) {
@@ -119,7 +117,7 @@ public class RouteService {
             route.setCoordinates(coordinates);
         }
         if (routeDetails.getFrom() != null) {
-            Location from = convertToEntity(routeDetails.getFrom());
+            Location from = RouteDTO.convertToEntity(routeDetails.getFrom());
             if (from.getId() != null) {
                 Optional<Location> existingFrom = locationRepository.findById(from.getId());
                 existingFrom.ifPresent(route::setFrom);
@@ -129,7 +127,7 @@ public class RouteService {
             }
         }
         if (routeDetails.getTo() != null) {
-            Location to = convertToEntity(routeDetails.getTo());
+            Location to = RouteDTO.convertToEntity(routeDetails.getTo());
             if (to.getId() != null) {
                 Optional<Location> existingTo = locationRepository.findById(to.getId());
                 existingTo.ifPresent(route::setTo);
@@ -153,7 +151,7 @@ public class RouteService {
         route.setAllowAdminEditing(routeDetails.isAllowAdminEditing());
 
         Route updatedRoute = routeRepository.save(route);
-        RouteDTO updatedRouteDTO = convertToDTO(updatedRoute);
+        RouteDTO updatedRouteDTO = RouteDTO.convertToDTO(updatedRoute);
         routeWebSocketController
                 .notifyRouteChange(new RouteUpdateDTO(OperationType.UPDATE, updatedRoute.getId(), updatedRouteDTO));
         // Create audit log
@@ -322,90 +320,5 @@ public class RouteService {
      */
     public Route addRouteBetweenLocations(RouteDTO routeDTO) {
         return createRoute(routeDTO);
-    }
-
-    // Conversion methods...
-
-    /**
-     * Convert RouteDTO to Route entity
-     *
-     * @param dto the RouteDTO
-     * @return the Route entity
-     */
-    private Route convertToEntity(RouteDTO dto) {
-        Route route = new Route();
-        route.setName(dto.getName());
-        route.setCoordinates(convertToEntity(dto.getCoordinates()));
-        route.setFrom(convertToEntity(dto.getFrom()));
-        route.setTo(dto.getTo() != null ? convertToEntity(dto.getTo()) : null);
-        route.setDistance(dto.getDistance());
-        route.setRating(dto.getRating());
-        route.setAllowAdminEditing(dto.isAllowAdminEditing());
-        return route;
-    }
-
-    /**
-     * Convert CoordinatesDTO to Coordinates entity
-     *
-     * @param dto the CoordinatesDTO
-     * @return the Coordinates entity
-     */
-    private Coordinates convertToEntity(CoordinatesDTO dto) {
-        Coordinates coordinates = new Coordinates();
-        coordinates.setX(dto.getX());
-        coordinates.setY(dto.getY());
-        return coordinates;
-    }
-
-    /**
-     * Convert LocationDTO to Location entity
-     *
-     * @param dto the LocationDTO
-     * @return the Location entity
-     */
-    private Location convertToEntity(LocationDTO dto) {
-        Location location = new Location();
-        location.setName(dto.getName());
-        location.setX(dto.getX());
-        location.setY(dto.getY());
-        return location;
-    }
-
-    /**
-     * Convert Route entity to RouteDTO
-     *
-     * @param route the Route entity
-     * @return the RouteDTO
-     */
-    private RouteDTO convertToDTO(Route route) {
-        RouteDTO dto = new RouteDTO();
-        dto.setName(route.getName());
-        dto.setCoordinates(convertToDTO(route.getCoordinates()));
-        dto.setFrom(convertToDTO(route.getFrom()));
-        dto.setTo(convertToDTO(route.getTo()));
-        dto.setDistance(route.getDistance());
-        dto.setRating(route.getRating());
-        dto.setAllowAdminEditing(route.isAllowAdminEditing());
-        return dto;
-    }
-
-    /**
-     * Convert Coordinates entity to CoordinatesDTO
-     *
-     * @param coordinates the Coordinates entity
-     * @return the CoordinatesDTO
-     */
-    private CoordinatesDTO convertToDTO(Coordinates coordinates) {
-        return new CoordinatesDTO(coordinates.getX(), coordinates.getY());
-    }
-
-    /**
-     * Convert Location entity to LocationDTO
-     *
-     * @param location the Location entity
-     * @return the LocationDTO
-     */
-    private LocationDTO convertToDTO(Location location) {
-        return new LocationDTO(location.getId(), location.getX(), location.getY(), location.getName());
     }
 }
