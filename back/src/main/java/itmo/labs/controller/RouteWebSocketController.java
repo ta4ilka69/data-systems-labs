@@ -1,5 +1,6 @@
 package itmo.labs.controller;
 
+import itmo.labs.dto.ImportHistoryUpdateDTO;
 import itmo.labs.dto.RouteUpdateDTO;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -15,5 +16,9 @@ public class RouteWebSocketController {
 
     public void notifyRouteChange(RouteUpdateDTO updateDTO) {
         messagingTemplate.convertAndSend("/topic/routes", updateDTO);
+    }
+
+    public void notifyImportHistoryChange(ImportHistoryUpdateDTO importHistoryDTO) {
+        messagingTemplate.convertAndSend("/topic/import-history", importHistoryDTO);
     }
 }
