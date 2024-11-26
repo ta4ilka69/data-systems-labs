@@ -47,6 +47,6 @@ export const importRoutes = async (file: File): Promise<string> => {
   return response.data;
 };
 export const getImportHistory = async (): Promise<ImportHistory[]> => {
-  const response = await api.get<ImportHistory[]>("/import");
+  const response = await api.get<ImportHistory[]>("/routes/import");
   return response.data;
 };

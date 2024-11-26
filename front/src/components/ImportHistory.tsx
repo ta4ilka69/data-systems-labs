@@ -1,67 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { Client, IMessage } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
+import { getImportHistory } from "../api/routeService";
+import RealTimeImportHistory from "./RealTimeImportHistory";
+import { ImportHistory } from "../types/ImportHistory";
 
-interface ImportHistory {
-  id: number;
-  timestamp: string;
-  status: "SUCCESS" | "PENDING" | "FAILURE";
-  performedBy: string;
-  recordsImported: number;
-  errorMessage: string | null;
-}
-
-const ImportHistory: React.FC = () => {
-  const [importHistories, setImportHistories] = useState<ImportHistory[]>([]);
+const ImportHistoryComponent: React.FC = () => {
+  const [importHistory, setImportHistory] = useState<ImportHistory[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const token = localStorage.getItem("token");
+
+  const fetchImportHistory = async () => {
+    try {
+      const history = await getImportHistory();
+      setImportHistory(history);
+    } catch (err) {
+      console.error("Failed to fetch import history", err);
+      setError("Failed to fetch import history.");
+    }
+  };
 
   useEffect(() => {
-    const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-      debug: (str) => {
-        console.log(str);
-      },
-      reconnectDelay: 5000,
-    });
-
-    client.onConnect = () => {
-      client.subscribe("/topic/import-history", (message: IMessage) => {
-        const updatedImport: ImportHistory = JSON.parse(message.body);
-        setImportHistories((prev) => [updatedImport, ...prev]);
-      });
-    };
-
-    client.activate();
-
-    return () => {
-      client.deactivate();
-    };
-  }, [token]);
+    fetchImportHistory();
+  }, []);
 
   return (
     <div className="import-history">
-      <h2>История импорта</h2>
+      <h2>Import History</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
+      <RealTimeImportHistory onUpdate={fetchImportHistory} />
       <table>
         <thead>
           <tr>
             <th>ID</th>
-            <th>Время</th>
-            <th>Статус</th>
-            <th>Выполнил</th>
-            <th>Добавлено объектов</th>
-            <th>Ошибка</th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>Performed By</th>
+            <th>Records Imported</th>
+            <th>Error Message</th>
           </tr>
         </thead>
         <tbody>
-          {importHistories.map((history) => (
+          {importHistory.map((history) => (
             <tr key={history.id}>
               <td>{history.id}</td>
-              <td>{new Date(history.timestamp).toLocaleString()}</td>
+              <td>{history.timestamp}</td>
               <td>{history.status}</td>
               <td>{history.performedBy}</td>
               <td>{history.recordsImported}</td>
@@ -74,4 +54,4 @@ const ImportHistory: React.FC = () => {
   );
 };
 
-export default ImportHistory;
+export default ImportHistoryComponent;

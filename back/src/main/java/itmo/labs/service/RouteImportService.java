@@ -47,11 +47,10 @@ public class RouteImportService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public void importRoutes(MultipartFile file) throws Exception {
+    public void importRoutes(MultipartFile file, ImportHistory history) throws Exception {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
-        ImportHistory history = new ImportHistory();
         history.setTimestamp(LocalDateTime.now());
         history.setPerformedBy(currentUser.getUsername());
         try (InputStream inputStream = file.getInputStream()) {
@@ -78,23 +77,17 @@ public class RouteImportService {
                 if (existingNames.contains(dto.getName())) {
                     history.setErrorMessage("Route name already exists in the system: " + dto.getName());
                     history.setStatus(ImportStatus.FAILURE);
-                    importHistoryRepository.save(history);
-                    routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
                     throw new IllegalArgumentException("Route name already exists in the system: " + dto.getName());
                 }
                 // Проверка координат
                 if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
                     history.setErrorMessage("Invalid X (latitude) for route: " + dto.getName());
                     history.setStatus(ImportStatus.FAILURE);
-                    importHistoryRepository.save(history);
-                    routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
                     throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
                 }
                 if (dto.getCoordinates().getY() < -90 || dto.getCoordinates().getY() > 90) {
                     history.setErrorMessage("Invalid Y (longitude) for route: " + dto.getName());
                     history.setStatus(ImportStatus.FAILURE);
-                    importHistoryRepository.save(history);
-                    routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
                     throw new IllegalArgumentException("Invalid Y (longitude) for route: " + dto.getName());
                 }
             }
@@ -114,6 +107,7 @@ public class RouteImportService {
         }
         importHistoryRepository.save(history);
         routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
+        routeWebSocketController.notifyRouteChange(null);    
     }
 
     public List<ImportHistoryUpdateDTO> getImportHistory() {

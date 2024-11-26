@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 
 const ImportRoutes: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -22,7 +22,7 @@ const ImportRoutes: React.FC = () => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("/api/routes/import", formData, {
+      const response = await api.post("/routes/import", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
