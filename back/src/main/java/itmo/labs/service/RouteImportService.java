@@ -13,8 +13,11 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import itmo.labs.dto.CoordinatesDTO;
 import itmo.labs.dto.ImportHistoryUpdateDTO;
+import itmo.labs.dto.LocationDTO;
 import itmo.labs.dto.RouteDTO;
+import itmo.labs.dto.YamlUploadDTO;
 import itmo.labs.model.ImportHistory;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
@@ -31,14 +34,19 @@ public class RouteImportService {
     private final RouteService routeService;
     private final ImportHistoryRepository importHistoryRepository;
     private final UserRepository userRepository;
+    private final CoordinatesService coordinatesService;
+    private final LocationService locationService;
 
     @Autowired
     public RouteImportService(RouteRepository routeRepository, RouteService routeService,
-            ImportHistoryRepository importHistoryRepository, UserRepository userRepository) {
+            ImportHistoryRepository importHistoryRepository, UserRepository userRepository,
+            CoordinatesService coordinatesService, LocationService locationService) {
         this.routeRepository = routeRepository;
         this.routeService = routeService;
         this.importHistoryRepository = importHistoryRepository;
         this.userRepository = userRepository;
+        this.coordinatesService = coordinatesService;
+        this.locationService = locationService;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -50,10 +58,34 @@ public class RouteImportService {
         history.setPerformedBy(currentUser.getUsername());
         importHistoryRepository.save(history);
         try (InputStream inputStream = file.getInputStream()) {
-            List<RouteDTO> routeDTOs = YamlRouteParser.parseRoutes(inputStream);
+            YamlUploadDTO importDTO = YamlRouteParser.parseYamlFile(inputStream);
+            int totalImported = 0;
             // Проверка уникальности имен маршрутов в файле
+            // Import standalone coordinates
+            try {
+                if (importDTO.getCoordinates() != null) {
+                    for (CoordinatesDTO coord : importDTO.getCoordinates()) {
+                        coordinatesService.saveCoordinates(RouteDTO.convertToEntity(coord));
+                        totalImported++;
+                    }
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Error importing coordinates on number " + totalImported + ": " + e.getMessage());
+            }
+            try {
+                if (importDTO.getLocations() != null) {
+                    for (LocationDTO loc : importDTO.getLocations()) {
+                        locationService.saveLocation(RouteDTO.convertToEntity(loc));
+                        totalImported++;
+                    }
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Error importing locations on number " + totalImported + ": " + e.getMessage());
+            }
             Set<String> names = new HashSet<>();
-            for (RouteDTO dto : routeDTOs) {
+            for (RouteDTO dto : importDTO.getRoutes()) {
                 if (!names.add(dto.getName())) {
                     throw new IllegalArgumentException("Duplicate route name found in import file: " + dto.getName());
                 }
@@ -65,23 +97,25 @@ public class RouteImportService {
                     .map(itmo.labs.model.Route::getName)
                     .toList();
 
-            for (RouteDTO dto : routeDTOs) {
-                if (existingNames.contains(dto.getName())) {
-                    throw new IllegalArgumentException("Route name already exists in the system: " + dto.getName());
+            if (importDTO.getRoutes() != null) {
+                for (RouteDTO dto : importDTO.getRoutes()) {
+                    if (existingNames.contains(dto.getName())) {
+                        throw new IllegalArgumentException("Route name already exists in the system: " + dto.getName());
+                    }
+                    // Проверка координат
+                    if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
+                        throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
+                    }
+                    if (dto.getCoordinates().getY() < -90 || dto.getCoordinates().getY() > 90) {
+                        throw new IllegalArgumentException("Invalid Y (longitude) for route: " + dto.getName());
+                    }
                 }
-                // Проверка координат
-                if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
-                    throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
-                }
-                if (dto.getCoordinates().getY() < -90 || dto.getCoordinates().getY() > 90) {
-                    throw new IllegalArgumentException("Invalid Y (longitude) for route: " + dto.getName());
+                for (RouteDTO dto : importDTO.getRoutes()) {
+                    routeService.createRoute(dto);
+                    totalImported++;
                 }
             }
-            // Транзакция: сохранение всех маршрутов
-            for (RouteDTO dto : routeDTOs) {
-                routeService.createRoute(dto);
-            }
-            history.setRecordsImported(routeDTOs.size());
+            history.setRecordsImported(totalImported);
         } catch (Exception e) {
             throw e;
         }

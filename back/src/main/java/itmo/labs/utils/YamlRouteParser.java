@@ -1,9 +1,6 @@
 package itmo.labs.utils;
 
-import itmo.labs.dto.CoordinatesDTO;
-import itmo.labs.dto.LocationDTO;
-import itmo.labs.dto.RouteDTO;
-
+import itmo.labs.dto.*;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -11,22 +8,61 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class YamlRouteParser {
 
-    public static List<RouteDTO> parseRoutes(InputStream inputStream) {
+    @SuppressWarnings("unchecked")
+    public static YamlUploadDTO parseYamlFile(InputStream inputStream) {
         LoaderOptions options = new LoaderOptions();
-        Constructor constructor = new Constructor(List.class, options);
+        Constructor constructor = new Constructor(LinkedHashMap.class, options);
         Yaml yaml = new Yaml(constructor);
-        try{
-        List<LinkedHashMap<String, Object>> rawRoutes = yaml.load(inputStream);
-        return rawRoutes.stream()
-            .map(YamlRouteParser::convertToRouteDTO)
-            .collect(Collectors.toList());
+        try {
+            LinkedHashMap<String, Object> content = yaml.load(inputStream);
+            YamlUploadDTO YamlUploadDTO = new YamlUploadDTO();
+            
+            // Parse routes if present
+            if (content.containsKey("routes")) {
+                List<LinkedHashMap<String, Object>> rawRoutes = (List<LinkedHashMap<String, Object>>) content.get("routes");
+                YamlUploadDTO.setRoutes(rawRoutes.stream()
+                    .map(YamlRouteParser::convertToRouteDTO)
+                    .toList());
+            }
+            
+            // Parse coordinates if present
+            if (content.containsKey("coordinates")) {
+                List<LinkedHashMap<String, Object>> rawCoordinates = (List<LinkedHashMap<String, Object>>) content.get("coordinates");
+                YamlUploadDTO.setCoordinates(rawCoordinates.stream()
+                    .map(YamlRouteParser::convertToCoordinatesDTO)
+                    .toList());
+            }
+            
+            // Parse locations if present
+            if (content.containsKey("locations")) {
+                List<LinkedHashMap<String, Object>> rawLocations = (List<LinkedHashMap<String, Object>>) content.get("locations");
+                YamlUploadDTO.setLocations(rawLocations.stream()
+                    .map(YamlRouteParser::convertToLocationDTO)
+                    .toList());
+            }
+            
+            return YamlUploadDTO;
         } catch (Exception e) {
             throw new RuntimeException("Error parsing YAML file: incorrect format", e);
         }
+    }
+
+    private static CoordinatesDTO convertToCoordinatesDTO(LinkedHashMap<String, Object> map) {
+        CoordinatesDTO coordinates = new CoordinatesDTO();
+        coordinates.setX(((Number) map.get("x")).floatValue());
+        coordinates.setY(((Number) map.get("y")).doubleValue());
+        return coordinates;
+    }
+
+    private static LocationDTO convertToLocationDTO(LinkedHashMap<String, Object> map) {
+        LocationDTO location = new LocationDTO();
+        location.setName((String) map.get("name"));
+        location.setX(((Number) map.get("x")).floatValue());
+        location.setY(((Number) map.get("y")).floatValue());
+        return location;
     }
 
     @SuppressWarnings("unchecked")
