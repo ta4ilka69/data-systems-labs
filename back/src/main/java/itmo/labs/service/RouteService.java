@@ -12,8 +12,8 @@ import itmo.labs.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
-
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(isolation = Isolation.READ_UNCOMMITTED)
 public class RouteService {
     private final RouteRepository routeRepository;
     private final LocationRepository locationRepository;
@@ -108,7 +108,7 @@ public class RouteService {
 
         if (isAdmin && !isOwner && !route.isAllowAdminEditing()) {
             throw new IllegalArgumentException("Admin is not allowed to modify this route.");
-
+        }
         // Update fields if provided
         if (routeDetails.getName() != null && !routeDetails.getName().isEmpty()) {
             route.setName(routeDetails.getName());
@@ -169,7 +169,6 @@ public class RouteService {
         audit.setPerformedBy(currentUser);
         audit.setDescription("Route updated with ID: " + updatedRoute.getId());
         routeAuditRepository.save(audit);
-
         return updatedRoute;
     }
 
