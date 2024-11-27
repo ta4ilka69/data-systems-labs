@@ -1,528 +1,541 @@
-- name: "Route A"
-  coordinates:
-    y: 89.0522
-    x: -118.2437
-  from:
-    name: "Los Angeles"
-    y: 34.0522
-    x: -118.2437
-  to:
-    name: "San Francisco"
-    y: 37.7749
-    x: -122.4194
-  distance: 600
-  rating: 4
-  allowAdminEditing: true
+routes:
+  - name: "Route A"
+    coordinates:
+      y: 89.0522
+      x: -118.2437
+    from:
+      name: "Los Angeles"
+      y: 34.0522
+      x: -118.2437
+    to:
+      name: "San Francisco"
+      y: 37.7749
+      x: -122.4194
+    distance: 600
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route B"
-  coordinates:
-    y: 40.7128
-    x: -74.0060
-  from:
-    name: "New York"
-    y: 40.7128
-    x: -74.0060
-  to:
-    name: "Boston"
-    y: 42.3601
-    x: -71.0589
-  distance: 350
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route B"
+    coordinates:
+      y: 40.7128
+      x: -74.0060
+    from:
+      name: "New York"
+      y: 40.7128
+      x: -74.0060
+    to:
+      name: "Boston"
+      y: 42.3601
+      x: -71.0589
+    distance: 350
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route C"
-  coordinates:
-    y: 51.5074
-    x: -0.1278
-  from:
-    name: "London"
-    y: 51.5074
-    x: -0.1278
-  to:
-    name: "Manchester"
-    y: 53.4808
-    x: -2.2426
-  distance: 330
-  rating: 3
-  allowAdminEditing: true
+  - name: "Route C"
+    coordinates:
+      y: 51.5074
+      x: -0.1278
+    from:
+      name: "London"
+      y: 51.5074
+      x: -0.1278
+    to:
+      name: "Manchester"
+      y: 53.4808
+      x: -2.2426
+    distance: 330
+    rating: 3
+    allowAdminEditing: true
 
-- name: "Route D"
-  coordinates:
-    y: 48.8566
-    x: 2.3522
-  from:
-    name: "Paris"
-    y: 48.8566
-    x: 2.3522
-  to:
-    name: "Lyon"
-    y: 45.7640
-    x: 4.8357
-  distance: 465
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route D"
+    coordinates:
+      y: 48.8566
+      x: 2.3522
+    from:
+      name: "Paris"
+      y: 48.8566
+      x: 2.3522
+    to:
+      name: "Lyon"
+      y: 45.7640
+      x: 4.8357
+    distance: 465
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route E"
-  coordinates:
-    y: 35.6895
-    x: 139.6917
-  from:
-    name: "Tokyo"
-    y: 35.6895
-    x: 139.6917
-  to:
-    name: "Osaka"
-    y: 34.6937
-    x: 135.5023
-  distance: 515
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route E"
+    coordinates:
+      y: 35.6895
+      x: 139.6917
+    from:
+      name: "Tokyo"
+      y: 35.6895
+      x: 139.6917
+    to:
+      name: "Osaka"
+      y: 34.6937
+      x: 135.5023
+    distance: 515
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route F"
-  coordinates:
-    y: -33.8688
-    x: 151.2093
-  from:
-    name: "Sydney"
-    y: -33.8688
-    x: 151.2093
-  to:
-    name: "Melbourne"
-    y: -37.8136
-    x: 144.9631
-  distance: 878
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route F"
+    coordinates:
+      y: -33.8688
+      x: 151.2093
+    from:
+      name: "Sydney"
+      y: -33.8688
+      x: 151.2093
+    to:
+      name: "Melbourne"
+      y: -37.8136
+      x: 144.9631
+    distance: 878
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route G"
-  coordinates:
-    y: 55.7558
-    x: 37.6173
-  from:
-    name: "Moscow"
-    y: 55.7558
-    x: 37.6173
-  to:
-    name: "Saint Petersburg"
-    y: 59.9343
-    x: 30.3351
-  distance: 700
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route G"
+    coordinates:
+      y: 55.7558
+      x: 37.6173
+    from:
+      name: "Moscow"
+      y: 55.7558
+      x: 37.6173
+    to:
+      name: "Saint Petersburg"
+      y: 59.9343
+      x: 30.3351
+    distance: 700
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route H"
-  coordinates:
-    y: 19.4326
-    x: -99.1332
-  from:
-    name: "Mexico City"
-    y: 19.4326
-    x: -99.1332
-  to:
-    name: "Guadalajara"
-    y: 20.6597
-    x: -103.3496
-  distance: 560
-  rating: 3
-  allowAdminEditing: true
+  - name: "Route H"
+    coordinates:
+      y: 19.4326
+      x: -99.1332
+    from:
+      name: "Mexico City"
+      y: 19.4326
+      x: -99.1332
+    to:
+      name: "Guadalajara"
+      y: 20.6597
+      x: -103.3496
+    distance: 560
+    rating: 3
+    allowAdminEditing: true
 
-- name: "Route I"
-  coordinates:
-    y: 28.6139
-    x: 77.2090
-  from:
-    name: "Delhi"
-    y: 28.6139
-    x: 77.2090
-  to:
-    name: "Mumbai"
-    y: 19.0760
-    x: 72.8777
-  distance: 1400
-  rating: 4
-  allowAdminEditing: false
+  - name: "Route I"
+    coordinates:
+      y: 28.6139
+      x: 77.2090
+    from:
+      name: "Delhi"
+      y: 28.6139
+      x: 77.2090
+    to:
+      name: "Mumbai"
+      y: 19.0760
+      x: 72.8777
+    distance: 1400
+    rating: 4
+    allowAdminEditing: false
 
-- name: "Route J"
-  coordinates:
-    y: 35.6762
-    x: 139.6503
-  from:
-    name: "Tokyo Station"
-    y: 35.6762
-    x: 139.6503
-  to:
-    name: "Shibuya"
-    y: 35.6595
-    x: 139.7004
-  distance: 24
-  rating: 5
-  allowAdminEditing: true
+  - name: "Route J"
+    coordinates:
+      y: 35.6762
+      x: 139.6503
+    from:
+      name: "Tokyo Station"
+      y: 35.6762
+      x: 139.6503
+    to:
+      name: "Shibuya"
+      y: 35.6595
+      x: 139.7004
+    distance: 24
+    rating: 5
+    allowAdminEditing: true
 
-- name: "Route K"
-  coordinates:
-    y: 34.0522
-    x: -118.2437
-  from:
-    name: "Los Angeles International Airport"
-    y: 33.9416
-    x: -118.4085
-  to:
-    name: "Santa Monica"
-    y: 34.0195
-    x: -118.4912
-  distance: 28
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route K"
+    coordinates:
+      y: 34.0522
+      x: -118.2437
+    from:
+      name: "Los Angeles International Airport"
+      y: 33.9416
+      x: -118.4085
+    to:
+      name: "Santa Monica"
+      y: 34.0195
+      x: -118.4912
+    distance: 28
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route AA"
-  coordinates:
-    y: 34.0522
-    x: -118.2437
-  from:
-    name: "Los Angeles"
-    y: 34.0522
-    x: -118.2437
-  to:
-    name: "San Francisco"
-    y: 37.7749
-    x: -122.4194
-  distance: 600
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route AA"
+    coordinates:
+      y: 34.0522
+      x: -118.2437
+    from:
+      name: "Los Angeles"
+      y: 34.0522
+      x: -118.2437
+    to:
+      name: "San Francisco"
+      y: 37.7749
+      x: -122.4194
+    distance: 600
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route BA"
-  coordinates:
-    y: 40.7128
-    x: -74.0060
-  from:
-    name: "New York"
-    y: 40.7128
-    x: -74.0060
-  to:
-    name: "Boston"
-    y: 42.3601
-    x: -71.0589
-  distance: 350
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route BA"
+    coordinates:
+      y: 40.7128
+      x: -74.0060
+    from:
+      name: "New York"
+      y: 40.7128
+      x: -74.0060
+    to:
+      name: "Boston"
+      y: 42.3601
+      x: -71.0589
+    distance: 350
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route CA"
-  coordinates:
-    y: 51.5074
-    x: -0.1278
-  from:
-    name: "London"
-    y: 51.5074
-    x: -0.1278
-  to:
-    name: "Manchester"
-    y: 53.4808
-    x: -2.2426
-  distance: 330
-  rating: 3
-  allowAdminEditing: true
+  - name: "Route CA"
+    coordinates:
+      y: 51.5074
+      x: -0.1278
+    from:
+      name: "London"
+      y: 51.5074
+      x: -0.1278
+    to:
+      name: "Manchester"
+      y: 53.4808
+      x: -2.2426
+    distance: 330
+    rating: 3
+    allowAdminEditing: true
 
-- name: "Route DA"
-  coordinates:
-    y: 48.8566
-    x: 2.3522
-  from:
-    name: "Paris"
-    y: 48.8566
-    x: 2.3522
-  to:
-    name: "Lyon"
-    y: 45.7640
-    x: 4.8357
-  distance: 465
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route DA"
+    coordinates:
+      y: 48.8566
+      x: 2.3522
+    from:
+      name: "Paris"
+      y: 48.8566
+      x: 2.3522
+    to:
+      name: "Lyon"
+      y: 45.7640
+      x: 4.8357
+    distance: 465
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route EA"
-  coordinates:
-    y: 35.6895
-    x: 139.6917
-  from:
-    name: "Tokyo"
-    y: 35.6895
-    x: 139.6917
-  to:
-    name: "Osaka"
-    y: 34.6937
-    x: 135.5023
-  distance: 515
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route EA"
+    coordinates:
+      y: 35.6895
+      x: 139.6917
+    from:
+      name: "Tokyo"
+      y: 35.6895
+      x: 139.6917
+    to:
+      name: "Osaka"
+      y: 34.6937
+      x: 135.5023
+    distance: 515
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route FA"
-  coordinates:
-    y: -33.8688
-    x: 151.2093
-  from:
-    name: "Sydney"
-    y: -33.8688
-    x: 151.2093
-  to:
-    name: "Melbourne"
-    y: -37.8136
-    x: 144.9631
-  distance: 878
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route FA"
+    coordinates:
+      y: -33.8688
+      x: 151.2093
+    from:
+      name: "Sydney"
+      y: -33.8688
+      x: 151.2093
+    to:
+      name: "Melbourne"
+      y: -37.8136
+      x: 144.9631
+    distance: 878
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route GA"
-  coordinates:
-    y: 55.7558
-    x: 37.6173
-  from:
-    name: "Moscow"
-    y: 55.7558
-    x: 37.6173
-  to:
-    name: "Saint Petersburg"
-    y: 59.9343
-    x: 30.3351
-  distance: 700
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route GA"
+    coordinates:
+      y: 55.7558
+      x: 37.6173
+    from:
+      name: "Moscow"
+      y: 55.7558
+      x: 37.6173
+    to:
+      name: "Saint Petersburg"
+      y: 59.9343
+      x: 30.3351
+    distance: 700
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route HA"
-  coordinates:
-    y: 19.4326
-    x: -99.1332
-  from:
-    name: "Mexico City"
-    y: 19.4326
-    x: -99.1332
-  to:
-    name: "Guadalajara"
-    y: 20.6597
-    x: -103.3496
-  distance: 560
-  rating: 3
-  allowAdminEditing: true
+  - name: "Route HA"
+    coordinates:
+      y: 19.4326
+      x: -99.1332
+    from:
+      name: "Mexico City"
+      y: 19.4326
+      x: -99.1332
+    to:
+      name: "Guadalajara"
+      y: 20.6597
+      x: -103.3496
+    distance: 560
+    rating: 3
+    allowAdminEditing: true
 
-- name: "Route IA"
-  coordinates:
-    y: 28.6139
-    x: 77.2090
-  from:
-    name: "Delhi"
-    y: 28.6139
-    x: 77.2090
-  to:
-    name: "Mumbai"
-    y: 19.0760
-    x: 72.8777
-  distance: 1400
-  rating: 4
-  allowAdminEditing: false
+  - name: "Route IA"
+    coordinates:
+      y: 28.6139
+      x: 77.2090
+    from:
+      name: "Delhi"
+      y: 28.6139
+      x: 77.2090
+    to:
+      name: "Mumbai"
+      y: 19.0760
+      x: 72.8777
+    distance: 1400
+    rating: 4
+    allowAdminEditing: false
 
-- name: "Route JA"
-  coordinates:
-    y: 35.6762
-    x: 139.6503
-  from:
-    name: "Tokyo Station"
-    y: 35.6762
-    x: 139.6503
-  to:
-    name: "Shibuya"
-    y: 35.6595
-    x: 139.7004
-  distance: 24
-  rating: 5
-  allowAdminEditing: true
+  - name: "Route JA"
+    coordinates:
+      y: 35.6762
+      x: 139.6503
+    from:
+      name: "Tokyo Station"
+      y: 35.6762
+      x: 139.6503
+    to:
+      name: "Shibuya"
+      y: 35.6595
+      x: 139.7004
+    distance: 24
+    rating: 5
+    allowAdminEditing: true
 
-- name: "Route KA"
-  coordinates:
-    y: 34.0522
-    x: -118.2437
-  from:
-    name: "Los Angeles International Airport"
-    y: 33.9416
-    x: -118.4085
-  to:
-    name: "Santa Monica"
-    y: 34.0195
-    x: -118.4912
-  distance: 28
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route KA"
+    coordinates:
+      y: 34.0522
+      x: -118.2437
+    from:
+      name: "Los Angeles International Airport"
+      y: 33.9416
+      x: -118.4085
+    to:
+      name: "Santa Monica"
+      y: 34.0195
+      x: -118.4912
+    distance: 28
+    rating: 4
+    allowAdminEditing: true
 
-  routes:
-- name: "Route AB"
-  coordinates:
-    y: 34.0522
-    x: -118.2437
-  from:
-    name: "Los Angeles"
-    y: 34.0522
-    x: -118.2437
-  to:
-    name: "San Francisco"
-    y: 37.7749
-    x: -122.4194
-  distance: 600
-  rating: 4
-  allowAdminEditing: true
+    routes:
+  - name: "Route AB"
+    coordinates:
+      y: 34.0522
+      x: -118.2437
+    from:
+      name: "Los Angeles"
+      y: 34.0522
+      x: -118.2437
+    to:
+      name: "San Francisco"
+      y: 37.7749
+      x: -122.4194
+    distance: 600
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route BB"
-  coordinates:
-    y: 40.7128
-    x: -74.0060
-  from:
-    name: "New York"
-    y: 40.7128
-    x: -74.0060
-  to:
-    name: "Boston"
-    y: 42.3601
-    x: -71.0589
-  distance: 350
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route BB"
+    coordinates:
+      y: 40.7128
+      x: -74.0060
+    from:
+      name: "New York"
+      y: 40.7128
+      x: -74.0060
+    to:
+      name: "Boston"
+      y: 42.3601
+      x: -71.0589
+    distance: 350
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route CB"
-  coordinates:
-    y: 51.5074
-    x: -0.1278
-  from:
-    name: "London"
-    y: 51.5074
-    x: -0.1278
-  to:
-    name: "Manchester"
-    y: 53.4808
-    x: -2.2426
-  distance: 330
-  rating: 3
-  allowAdminEditing: true
+  - name: "Route CB"
+    coordinates:
+      y: 51.5074
+      x: -0.1278
+    from:
+      name: "London"
+      y: 51.5074
+      x: -0.1278
+    to:
+      name: "Manchester"
+      y: 53.4808
+      x: -2.2426
+    distance: 330
+    rating: 3
+    allowAdminEditing: true
 
-- name: "Route DB"
-  coordinates:
-    y: 48.8566
-    x: 2.3522
-  from:
-    name: "Paris"
-    y: 48.8566
-    x: 2.3522
-  to:
-    name: "Lyon"
-    y: 45.7640
-    x: 4.8357
-  distance: 465
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route DB"
+    coordinates:
+      y: 48.8566
+      x: 2.3522
+    from:
+      name: "Paris"
+      y: 48.8566
+      x: 2.3522
+    to:
+      name: "Lyon"
+      y: 45.7640
+      x: 4.8357
+    distance: 465
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route EB"
-  coordinates:
-    y: 35.6895
-    x: 139.6917
-  from:
-    name: "Tokyo"
-    y: 35.6895
-    x: 139.6917
-  to:
-    name: "Osaka"
-    y: 34.6937
-    x: 135.5023
-  distance: 515
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route EB"
+    coordinates:
+      y: 35.6895
+      x: 139.6917
+    from:
+      name: "Tokyo"
+      y: 35.6895
+      x: 139.6917
+    to:
+      name: "Osaka"
+      y: 34.6937
+      x: 135.5023
+    distance: 515
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route FB"
-  coordinates:
-    y: -33.8688
-    x: 151.2093
-  from:
-    name: "Sydney"
-    y: -33.8688
-    x: 151.2093
-  to:
-    name: "Melbourne"
-    y: -37.8136
-    x: 144.9631
-  distance: 878
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route FB"
+    coordinates:
+      y: -33.8688
+      x: 151.2093
+    from:
+      name: "Sydney"
+      y: -33.8688
+      x: 151.2093
+    to:
+      name: "Melbourne"
+      y: -37.8136
+      x: 144.9631
+    distance: 878
+    rating: 4
+    allowAdminEditing: true
 
-- name: "Route GB"
-  coordinates:
-    y: 55.7558
-    x: 37.6173
-  from:
-    name: "Moscow"
-    y: 55.7558
-    x: 37.6173
-  to:
-    name: "Saint Petersburg"
-    y: 59.9343
-    x: 30.3351
-  distance: 700
-  rating: 5
-  allowAdminEditing: false
+  - name: "Route GB"
+    coordinates:
+      y: 55.7558
+      x: 37.6173
+    from:
+      name: "Moscow"
+      y: 55.7558
+      x: 37.6173
+    to:
+      name: "Saint Petersburg"
+      y: 59.9343
+      x: 30.3351
+    distance: 700
+    rating: 5
+    allowAdminEditing: false
 
-- name: "Route HB"
-  coordinates:
-    y: 19.4326
-    x: -99.1332
-  from:
-    name: "Mexico City"
-    y: 19.4326
-    x: -99.1332
-  to:
-    name: "Guadalajara"
-    y: 20.6597
-    x: -103.3496
-  distance: 560
-  rating: 3
-  allowAdminEditing: true
+  - name: "Route HB"
+    coordinates:
+      y: 19.4326
+      x: -99.1332
+    from:
+      name: "Mexico City"
+      y: 19.4326
+      x: -99.1332
+    to:
+      name: "Guadalajara"
+      y: 20.6597
+      x: -103.3496
+    distance: 560
+    rating: 3
+    allowAdminEditing: true
 
-- name: "Route IB"
-  coordinates:
-    y: 28.6139
-    x: 77.2090
-  from:
-    name: "Delhi"
-    y: 28.6139
-    x: 77.2090
-  to:
-    name: "Mumbai"
-    y: 19.0760
-    x: 72.8777
-  distance: 1400
-  rating: 4
-  allowAdminEditing: false
+  - name: "Route IB"
+    coordinates:
+      y: 28.6139
+      x: 77.2090
+    from:
+      name: "Delhi"
+      y: 28.6139
+      x: 77.2090
+    to:
+      name: "Mumbai"
+      y: 19.0760
+      x: 72.8777
+    distance: 1400
+    rating: 4
+    allowAdminEditing: false
 
-- name: "Route JB"
-  coordinates:
-    y: 35.6762
-    x: 139.6503
-  from:
-    name: "Tokyo Station"
-    y: 35.6762
-    x: 139.6503
-  to:
-    name: "Shibuya"
-    y: 35.6595
-    x: 139.7004
-  distance: 24
-  rating: 5
-  allowAdminEditing: true
+  - name: "Route JB"
+    coordinates:
+      y: 35.6762
+      x: 139.6503
+    from:
+      name: "Tokyo Station"
+      y: 35.6762
+      x: 139.6503
+    to:
+      name: "Shibuya"
+      y: 35.6595
+      x: 139.7004
+    distance: 24
+    rating: 5
+    allowAdminEditing: true
 
-- name: "Route KB"
-  coordinates:
-    y: 34.0522
-    x: -118.2437
-  from:
-    name: "Los Angeles International Airport"
-    y: 33.9416
-    x: -118.4085
-  to:
-    name: "Santa Monica"
-    y: 34.0195
-    x: -118.4912
-  distance: 28
-  rating: 4
-  allowAdminEditing: true
+  - name: "Route KB"
+    coordinates:
+      y: 34.0522
+      x: -118.2437
+    from:
+      name: "Los Angeles International Airport"
+      y: 33.9416
+      x: -118.4085
+    to:
+      name: "Santa Monica"
+      y: 34.0195
+      x: -118.4912
+    distance: 28
+    rating: 4
+    allowAdminEditing: true
+locations:
+  - name: "ta4ilnya"
+    y: 69
+    x: 69
+  - name: "dro4ilnya"
+    y: 69
+    x: 69
+coordinates:
+  - y: 0
+    x: 0
+  - y: 1
+    x: 0

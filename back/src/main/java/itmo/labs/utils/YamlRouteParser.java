@@ -19,31 +19,38 @@ public class YamlRouteParser {
         try {
             LinkedHashMap<String, Object> content = yaml.load(inputStream);
             YamlUploadDTO YamlUploadDTO = new YamlUploadDTO();
-            
+            int keys = 0;
             // Parse routes if present
             if (content.containsKey("routes")) {
-                List<LinkedHashMap<String, Object>> rawRoutes = (List<LinkedHashMap<String, Object>>) content.get("routes");
+                List<LinkedHashMap<String, Object>> rawRoutes = (List<LinkedHashMap<String, Object>>) content
+                        .get("routes");
                 YamlUploadDTO.setRoutes(rawRoutes.stream()
-                    .map(YamlRouteParser::convertToRouteDTO)
-                    .toList());
+                        .map(YamlRouteParser::convertToRouteDTO)
+                        .toList());
+                keys++;
             }
-            
+
             // Parse coordinates if present
             if (content.containsKey("coordinates")) {
-                List<LinkedHashMap<String, Object>> rawCoordinates = (List<LinkedHashMap<String, Object>>) content.get("coordinates");
+                List<LinkedHashMap<String, Object>> rawCoordinates = (List<LinkedHashMap<String, Object>>) content
+                        .get("coordinates");
                 YamlUploadDTO.setCoordinates(rawCoordinates.stream()
-                    .map(YamlRouteParser::convertToCoordinatesDTO)
-                    .toList());
+                        .map(YamlRouteParser::convertToCoordinatesDTO)
+                        .toList());
+                keys++;
             }
-            
+
             // Parse locations if present
             if (content.containsKey("locations")) {
-                List<LinkedHashMap<String, Object>> rawLocations = (List<LinkedHashMap<String, Object>>) content.get("locations");
+                List<LinkedHashMap<String, Object>> rawLocations = (List<LinkedHashMap<String, Object>>) content
+                        .get("locations");
                 YamlUploadDTO.setLocations(rawLocations.stream()
-                    .map(YamlRouteParser::convertToLocationDTO)
-                    .toList());
+                        .map(YamlRouteParser::convertToLocationDTO)
+                        .toList());
+                keys++;
             }
-            
+            if (content.keySet().size() - keys != 0)
+                throw new RuntimeException("Error parsing YAML file: incorrect format");
             return YamlUploadDTO;
         } catch (Exception e) {
             throw new RuntimeException("Error parsing YAML file: incorrect format", e);
@@ -69,7 +76,7 @@ public class YamlRouteParser {
     private static RouteDTO convertToRouteDTO(LinkedHashMap<String, Object> map) {
         RouteDTO routeDTO = new RouteDTO();
         routeDTO.setName((String) map.get("name"));
-        
+
         // Convert coordinates
         LinkedHashMap<String, Object> coordMap = (LinkedHashMap<String, Object>) map.get("coordinates");
         CoordinatesDTO coordinates = new CoordinatesDTO();

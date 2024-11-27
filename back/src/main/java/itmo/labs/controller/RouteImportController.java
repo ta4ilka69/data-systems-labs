@@ -1,7 +1,9 @@
 package itmo.labs.controller;
 
 import itmo.labs.dto.ImportHistoryUpdateDTO;
+import itmo.labs.dto.RouteUpdateDTO;
 import itmo.labs.model.ImportHistory;
+import itmo.labs.model.OperationType;
 import itmo.labs.model.ImportHistory.ImportStatus;
 import itmo.labs.repository.ImportHistoryRepository;
 import itmo.labs.service.RouteImportService;
@@ -49,6 +51,7 @@ public class RouteImportController {
             history.setStatus(ImportStatus.SUCCESS);
             importHistoryRepository.save(history);
             routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
+            routeWebSocketController.notifyRouteChange(new RouteUpdateDTO(OperationType.CREATE, history.getRecordsImported(), null));
             return new ResponseEntity<>("Routes successfully imported.", HttpStatus.OK);
         } catch (Exception e) {
             history.setStatus(ImportStatus.FAILURE);

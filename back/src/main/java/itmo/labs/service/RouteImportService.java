@@ -111,6 +111,8 @@ public class RouteImportService {
                     }
                 }
                 for (RouteDTO dto : importDTO.getRoutes()) {
+                    dto.setCreatedById(currentUser.getId());
+                    dto.setCreatedByUsername(currentUser.getUsername());
                     routeService.createRoute(dto);
                     totalImported++;
                 }

@@ -92,6 +92,9 @@ public class RouteDTO {
      */
     public static RouteDTO convertToDTO(Route route) {
         RouteDTO dto = new RouteDTO();
+        dto.setId(route.getId());
+        dto.setCreatedById(route.getCreatedBy().getId());
+        dto.setCreatedByUsername(route.getCreatedBy().getUsername());
         dto.setName(route.getName());
         dto.setCoordinates(convertToDTO(route.getCoordinates()));
         dto.setFrom(convertToDTO(route.getFrom()));
