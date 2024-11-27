@@ -1,33 +1,69 @@
 .import-history {
   padding: 2rem;
+  font-family: 'Arial', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .import-history h2 {
-  margin-bottom: 1rem;
-  color: #333;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 2rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
 }
 
 .import-history table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .import-history th,
 .import-history td {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
+  padding: 1rem;
   text-align: left;
 }
 
 .import-history th {
-  background-color: #f4f4f4;
+  background-color: #3498db;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .import-history tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #f8f9fa;
 }
 
 .import-history tr:hover {
-  background-color: #f1f1f1;
+  background-color: #e9ecef;
+  transition: background-color 0.3s ease;
+}
+
+.import-history td {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.import-history tr:last-child td {
+  border-bottom: none;
+}
+
+.status-failure {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.status-success {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-style: italic;
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getImportHistory } from "../api/routeService";
 import RealTimeImportHistory from "./RealTimeImportHistory";
 import { ImportHistory } from "../types/ImportHistory";
+import "./ImportHistory.css";
 
 const ImportHistoryComponent: React.FC = () => {
   const [importHistory, setImportHistory] = useState<ImportHistory[]>([]);
@@ -24,7 +25,7 @@ const ImportHistoryComponent: React.FC = () => {
   return (
     <div className="import-history">
       <h2>Import History</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
       <RealTimeImportHistory onUpdate={fetchImportHistory} />
       <table>
         <thead>
@@ -41,11 +42,13 @@ const ImportHistoryComponent: React.FC = () => {
           {importHistory.map((history) => (
             <tr key={history.id}>
               <td>{history.id}</td>
-              <td>{history.timestamp}</td>
-              <td>{history.status}</td>
+              <td>{new Date(history.timestamp).toLocaleString()}</td>
+              <td className={`status-${history.status.toLowerCase()}`}>
+                {history.status}
+              </td>
               <td>{history.performedBy}</td>
               <td>{history.recordsImported}</td>
-              <td>{history.errorMessage || "N/A"}</td>
+              <td className="error-message">{history.errorMessage || "N/A"}</td>
             </tr>
           ))}
         </tbody>
