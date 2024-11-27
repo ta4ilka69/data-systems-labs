@@ -106,9 +106,8 @@ public class RouteService {
             throw new IllegalArgumentException("You do not have permission to update this route.");
         }
 
-        if (isAdmin && !route.isAllowAdminEditing()) {
+        if (isAdmin && !isOwner && !route.isAllowAdminEditing()) {
             throw new IllegalArgumentException("Admin is not allowed to modify this route.");
-        }
 
         // Update fields if provided
         if (routeDetails.getName() != null && !routeDetails.getName().isEmpty()) {
@@ -192,8 +191,8 @@ public class RouteService {
             throw new IllegalArgumentException("You do not have permission to delete this route.");
         }
 
-        if (isAdmin && !route.isAllowAdminEditing()) {
-            throw new IllegalArgumentException("Admin is not allowed to delete this route.");
+        if (isAdmin && !isOwner && !route.isAllowAdminEditing()) {
+            throw new IllegalArgumentException("Admin is not allowed to delete this route." + route.getCreatedBy().getId() + " " + currentUser.getId());
         }
 
         routeRepository.delete(route);
@@ -206,6 +205,7 @@ public class RouteService {
         audit.setPerformedBy(currentUser);
         audit.setDescription("Route deleted with ID: " + route.getId());
         routeAuditRepository.save(audit);
+        routeWebSocketController.notifyRouteChange(new RouteUpdateDTO(OperationType.DELETE, route.getId(), RouteDTO.convertToDTO(route)));
     }
 
     /**
