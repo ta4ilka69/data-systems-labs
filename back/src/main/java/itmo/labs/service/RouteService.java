@@ -51,6 +51,11 @@ public class RouteService {
      * @return the created Route
      */
     public Route createRoute(RouteDTO routeDTO) {
+        // new unique name check
+        if (routeRepository.findAll().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase(routeDTO.getName()))) {
+            throw new IllegalArgumentException("Route with name '" + routeDTO.getName() + "' already exists");
+        }
         // Retrieve the currently authenticated user
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
@@ -84,7 +89,11 @@ public class RouteService {
      */
     public Route updateRoute(Integer id, RouteDTO routeDetails) {
         Route route = getRouteById(id);
-
+        // new unique name check
+        if (routeRepository.findAll().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase(routeDetails.getName()))) {
+            throw new IllegalArgumentException("Route with name '" + routeDetails.getName() + "' already exists");
+        }
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
@@ -149,7 +158,6 @@ public class RouteService {
 
         // Update the allowAdminEditing flag if specified
         route.setAllowAdminEditing(routeDetails.isAllowAdminEditing());
-
         Route updatedRoute = routeRepository.save(route);
         RouteDTO updatedRouteDTO = RouteDTO.convertToDTO(updatedRoute);
         routeWebSocketController
@@ -232,7 +240,7 @@ public class RouteService {
         List<Route> routesToDelete = routeRepository.findAll()
                 .stream()
                 .filter(route -> route.getRating() == rating)
-                .filter(route-> route.getCreatedBy().getId() == currentUser.getId())
+                .filter(route -> route.getCreatedBy().getId() == currentUser.getId())
                 .collect(Collectors.toList());
         routeRepository.deleteAll(routesToDelete);
         routeWebSocketController.notifyRouteChange(new RouteUpdateDTO(OperationType.DELETE, 0, null));

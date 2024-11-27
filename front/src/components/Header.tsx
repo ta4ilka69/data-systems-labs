@@ -25,39 +25,28 @@ const Header: React.FC = () => {
               <Link to="/admin" className="nav-link">
                 Admin
               </Link>
-              <button
-                onClick={() => navigate("/find-routes")}
-                className="nav-link"
-              >
+              <Link to="/find-routes" className="nav-link">
                 Find Routes
-              </button>
-              <button
-                onClick={() => navigate("/get-routes-by-rating")}
-                className="nav-link"
-              >
+                </Link>
+              <Link to="/get-routes-by-rating" className="nav-link">
                 Get Routes By Rating
-              </button>
-              <button
-                onClick={() => navigate("/import")}
+                </Link>
+              <Link to="/import"
                 className="nav-link"
               >
                 Import
-              </button>
-              <button
-                onClick={() => navigate("/import-history")}
-                className="nav-link"
-              >
+              </Link>
+              <Link to="/import-history" className="nav-link">
                 Import History
-              </button>
-              <button
-                onClick={() => navigate("/delete-routes-by-rating")}
+              </Link>
+              <Link to="/delete-routes-by-rating"
                 className="nav-link"
               >
                 Delete Routes By Rating
-              </button>
-              <button onClick={() => navigate("/map")} className="nav-link">
+              </Link>
+              <Link to = "/map" className="nav-link">
                 View Map
-              </button>
+              </Link>
             </>
           )}
           {role === "USER" &&

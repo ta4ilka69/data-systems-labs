@@ -17,6 +17,9 @@ public class LocationService {
     }
 
     public Location saveLocation(Location location) {
+        if(location.getX() < -180 || location.getX() > 180 || location.getY() < -90 || location.getY() > 90) {
+            throw new IllegalArgumentException("Coordinates of location are out of range");
+        }
         return locationRepository.save(location);
     }
 

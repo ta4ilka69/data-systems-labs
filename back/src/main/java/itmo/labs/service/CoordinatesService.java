@@ -17,6 +17,9 @@ public class CoordinatesService {
     }
 
     public Coordinates saveCoordinates(Coordinates coordinates) {
+        if(coordinates.getX() < -180 || coordinates.getX() > 180 || coordinates.getY() < -90 || coordinates.getY() > 90) {
+            throw new IllegalArgumentException("Coordinates are out of range");
+        }
         return coordinatesRepository.save(coordinates);
     }
 

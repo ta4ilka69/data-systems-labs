@@ -38,12 +38,11 @@ export const importRoutes = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await api.post("/api/routes/import", formData, {
+  const response = await api.post("/routes/import", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
-
   return response.data;
 };
 export const getImportHistory = async (): Promise<ImportHistory[]> => {

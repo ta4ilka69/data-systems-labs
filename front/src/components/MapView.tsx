@@ -43,15 +43,15 @@ const getColorByUser = (userId: number) => {
 
 // Function to convert x, y to latitude and longitude
 const convertToLatLng = (x: number, y: number): [number, number] => {
-  const lat = (y / 552) * 180 - 90; // Map y to -90 to 90
-  const lng = (x / 552) * 360 - 180; // Map x to -180 to 180
+  const lat = y
+  const lng = x 
   return [lat, lng];
 };
 
 // Function to convert latitude and longitude back to x, y
 const convertToXY = (lat: number, lng: number): [number, number] => {
-  const y = ((lat + 90) / 180) * 552;
-  const x = ((lng + 180) / 360) * 552;
+  const y = lat
+  const x = lng
   return [x, y];
 };
 

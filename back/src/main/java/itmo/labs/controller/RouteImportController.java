@@ -1,6 +1,9 @@
 package itmo.labs.controller;
 
 import itmo.labs.dto.ImportHistoryUpdateDTO;
+import itmo.labs.model.ImportHistory;
+import itmo.labs.model.ImportHistory.ImportStatus;
+import itmo.labs.repository.ImportHistoryRepository;
 import itmo.labs.service.RouteImportService;
 
 import java.util.List;
@@ -15,10 +18,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class RouteImportController {
 
     private final RouteImportService routeImportService;
+    private final ImportHistoryRepository importHistoryRepository;
+    private final RouteWebSocketController routeWebSocketController;
 
     @Autowired
-    public RouteImportController(RouteImportService routeImportService) {
+    public RouteImportController(RouteImportService routeImportService, ImportHistoryRepository importHistoryRepository,
+            RouteWebSocketController routeWebSocketController) {
         this.routeImportService = routeImportService;
+        this.importHistoryRepository = importHistoryRepository;
+        this.routeWebSocketController = routeWebSocketController;
     }
 
     /**
@@ -29,13 +37,24 @@ public class RouteImportController {
      */
     @PostMapping("/import")
     public ResponseEntity<String> importRoutes(@RequestParam("file") MultipartFile file) {
+        ImportHistory history = new ImportHistory();
         if (file.isEmpty()) {
+            history.setStatus(ImportStatus.FAILURE);
+            history.setErrorMessage("File not selected for import (or file is empty).");
+            importHistoryRepository.save(history);
             return new ResponseEntity<>("File not selected for import.", HttpStatus.BAD_REQUEST);
         }
         try {
-            routeImportService.importRoutes(file);
+            routeImportService.importRoutes(file, history);
+            history.setStatus(ImportStatus.SUCCESS);
+            importHistoryRepository.save(history);
+            routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
             return new ResponseEntity<>("Routes successfully imported.", HttpStatus.OK);
         } catch (Exception e) {
+            history.setStatus(ImportStatus.FAILURE);
+            history.setErrorMessage(e.getMessage());
+            importHistoryRepository.save(history);
+            routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
             return new ResponseEntity<>("Error importing routes: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

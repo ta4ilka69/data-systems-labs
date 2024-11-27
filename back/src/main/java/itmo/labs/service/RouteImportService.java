@@ -13,11 +13,9 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import itmo.labs.controller.RouteWebSocketController;
 import itmo.labs.dto.ImportHistoryUpdateDTO;
 import itmo.labs.dto.RouteDTO;
 import itmo.labs.model.ImportHistory;
-import itmo.labs.model.ImportHistory.ImportStatus;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.ImportHistoryRepository;
@@ -33,17 +31,14 @@ public class RouteImportService {
     private final RouteService routeService;
     private final ImportHistoryRepository importHistoryRepository;
     private final UserRepository userRepository;
-    private final RouteWebSocketController routeWebSocketController;
 
     @Autowired
     public RouteImportService(RouteRepository routeRepository, RouteService routeService,
-            ImportHistoryRepository importHistoryRepository, UserRepository userRepository,
-            RouteWebSocketController routeWebSocketController) {
+            ImportHistoryRepository importHistoryRepository, UserRepository userRepository) {
         this.routeRepository = routeRepository;
         this.routeService = routeService;
         this.importHistoryRepository = importHistoryRepository;
         this.userRepository = userRepository;
-        this.routeWebSocketController = routeWebSocketController;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -53,16 +48,13 @@ public class RouteImportService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
         history.setTimestamp(LocalDateTime.now());
         history.setPerformedBy(currentUser.getUsername());
+        importHistoryRepository.save(history);
         try (InputStream inputStream = file.getInputStream()) {
             List<RouteDTO> routeDTOs = YamlRouteParser.parseRoutes(inputStream);
             // Проверка уникальности имен маршрутов в файле
             Set<String> names = new HashSet<>();
             for (RouteDTO dto : routeDTOs) {
                 if (!names.add(dto.getName())) {
-                    history.setErrorMessage("Duplicate route name found in import file: " + dto.getName());
-                    history.setStatus(ImportStatus.FAILURE);
-                    importHistoryRepository.save(history);
-                    routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
                     throw new IllegalArgumentException("Duplicate route name found in import file: " + dto.getName());
                 }
             }
@@ -75,39 +67,24 @@ public class RouteImportService {
 
             for (RouteDTO dto : routeDTOs) {
                 if (existingNames.contains(dto.getName())) {
-                    history.setErrorMessage("Route name already exists in the system: " + dto.getName());
-                    history.setStatus(ImportStatus.FAILURE);
                     throw new IllegalArgumentException("Route name already exists in the system: " + dto.getName());
                 }
                 // Проверка координат
                 if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
-                    history.setErrorMessage("Invalid X (latitude) for route: " + dto.getName());
-                    history.setStatus(ImportStatus.FAILURE);
                     throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
                 }
                 if (dto.getCoordinates().getY() < -90 || dto.getCoordinates().getY() > 90) {
-                    history.setErrorMessage("Invalid Y (longitude) for route: " + dto.getName());
-                    history.setStatus(ImportStatus.FAILURE);
                     throw new IllegalArgumentException("Invalid Y (longitude) for route: " + dto.getName());
                 }
             }
-
             // Транзакция: сохранение всех маршрутов
             for (RouteDTO dto : routeDTOs) {
                 routeService.createRoute(dto);
             }
-            history.setStatus(ImportStatus.SUCCESS);
             history.setRecordsImported(routeDTOs.size());
         } catch (Exception e) {
-            history.setStatus(ImportStatus.FAILURE);
-            history.setRecordsImported(0);
-            importHistoryRepository.save(history);
-            routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
             throw e;
         }
-        importHistoryRepository.save(history);
-        routeWebSocketController.notifyImportHistoryChange(new ImportHistoryUpdateDTO(history));
-        routeWebSocketController.notifyRouteChange(null);    
     }
 
     public List<ImportHistoryUpdateDTO> getImportHistory() {
