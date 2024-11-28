@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(isolation = Isolation.REPEATABLE_READ)
+@Transactional(isolation = Isolation.READ_UNCOMMITTED)
 public class RouteService {
     private final RouteRepository routeRepository;
     private final LocationRepository locationRepository;

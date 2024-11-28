@@ -1,19 +1,16 @@
 import http from "k6/http";
 import { check, fail, group } from "k6";
 import { SharedArray } from "k6/data";
-import { FormData } from "k6/encoding";
 // Test configuration
 
 export const options = {
   scenarios: {
     concurrent_users: {
       executor: "ramping-vus",
-      startVUs: 0,
+      startVUs: 2,
       stages: [
-        { duration: "10s", target: 10 },
-        { duration: "2s", target: 5 },
-        { duration: "5s", target: 5 },
-        { duration: "10s", target: 0 },
+        { duration: "10s", target: 2 },
+        { duration: "1s", target: 0 },
       ],
     },
   },
@@ -38,7 +35,6 @@ const testUsers = new SharedArray("users", function () {
 
 // Shared route name for concurrent update/delete tests
 const SHARED_ROUTE_NAME = "SharedRoute_For_Testing";
-
 // Setup function to create a shared route before tests
 export function setup() {
   const responses = testUsers.map((user) => {
@@ -59,7 +55,7 @@ export function setup() {
   // Return the route ID of the first successful creation
   return {
     sharedRouteId: successfulCreations[0].response.json("id"),
-    sharedRouteToken: successfulCreations[0].token, // Keep token for re-creation
+    sharedRouteTokens: responses.map((r) => r.token),
   };
 }
 // Helper function for login
@@ -83,10 +79,17 @@ function login(username, password) {
   ) {
     fail(`Login failed for user ${username}`);
   }
-
   return loginRes.json("token");
 }
 
+function deleteRoute(token, routeId) {
+  return http.del(`${BASE_URL}/routes/${routeId}`, JSON.stringify({}), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    timeout: "10s",
+  });
+}
 // Helper function to create a route
 function createRoute(token, routeName) {
   const route = {
@@ -126,8 +129,10 @@ function importRoutes(token, fileContent) {
 
 // Main test function
 export default function (data) {
+  const vu = __VU; // Current Virtual User I
+  const token = data.sharedRouteTokens[vu % data.sharedRouteTokens.length];
   let routeId = data.sharedRouteId;
-  const token = data.sharedRouteToken;
+
   group("Concurrent Updates on Shared Route", () => {
     const updatedName = `UpdatedRoute_${Math.random()
       .toString(36)
@@ -155,6 +160,20 @@ export default function (data) {
       "shared route update handled correctly": (r) =>
         r.status === 200 || r.status === 400,
     });
+    if (response.status !== 200 && response.status !== 400) {
+      console.log(response);
+    }
+  });
+
+  group("Concurrent Deletion of Routes", () => {
+    const response = deleteRoute(token, routeId);
+    check(response, {
+      "shared route deletion handled correctly": (r) =>
+        r.status === 200 || r.status === 404,
+    });
+    if (response.status !== 200 && response.status !== 404) {
+      console.log(response);
+    }
   });
 
   // Use the updated `routeId` in subsequent tests
@@ -165,12 +184,12 @@ export default function (data) {
         r.status === 201 || r.status === 409,
     });
     if (response.status === 201) {
-      routeId = response.json("id");
+      data.sharedRouteId = response.json("id");
+      routeId = data.sharedRouteId;
     }
     if (response.status !== 409 && response.status !== 201) {
       console.log("Duplicate route creation failed");
-      console.log(response.status);
-      console.log(response.body);
+      console.log(response);
     }
   });
 

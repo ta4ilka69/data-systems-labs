@@ -9,7 +9,7 @@ export const getAllAdminRoleRequests = async (): Promise<UserDTO[]> => {
 export const approveAdminRoleRequest = async (
   userId: number
 ): Promise<void> => {
-  await api.post(`/approve-admin-role/${userId}`);
+  await api.post(`/admin/approve-admin-role/${userId}`);
 };
 
 export const findRoutesBetweenLocations = async (
