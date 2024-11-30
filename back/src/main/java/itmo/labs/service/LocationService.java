@@ -5,12 +5,11 @@ import itmo.labs.repository.LocationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.transaction.annotation.Propagation;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional(isolation = Isolation.REPEATABLE_READ)
 public class LocationService {
 
     private final LocationRepository locationRepository;

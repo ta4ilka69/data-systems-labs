@@ -7,9 +7,9 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Propagation;
 
 @Service
-@Transactional(isolation = Isolation.REPEATABLE_READ)
 public class CoordinatesService {
 
     private final CoordinatesRepository coordinatesRepository;
@@ -17,7 +17,7 @@ public class CoordinatesService {
     public CoordinatesService(CoordinatesRepository coordinatesRepository) {
         this.coordinatesRepository = coordinatesRepository;
     }
-
+    
     public Coordinates saveCoordinates(Coordinates coordinates) {
         if(coordinates.getX() < -180 || coordinates.getX() > 180 || coordinates.getY() < -90 || coordinates.getY() > 90) {
             throw new IllegalArgumentException("Coordinates are out of range");

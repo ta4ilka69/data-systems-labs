@@ -19,9 +19,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Propagation;
 
 @Service
-@Transactional(isolation = Isolation.READ_UNCOMMITTED)
 public class RouteService {
     private final RouteRepository routeRepository;
     private final LocationRepository locationRepository;
@@ -50,6 +50,7 @@ public class RouteService {
      * @param route the Route entity
      * @return the created Route
      */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Route createRoute(RouteDTO routeDTO) {
         // new unique name check
         if (routeRepository.findAll().stream()
@@ -87,6 +88,7 @@ public class RouteService {
      * @param routeDetails the Route data to update
      * @return the updated Route
      */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Route updateRoute(Integer id, RouteDTO routeDetails) {
         Route route = getRouteById(id);
         // new unique name check
@@ -173,10 +175,12 @@ public class RouteService {
     }
 
     /**
+     * 
      * Delete a Route
      *
      * @param id the Route ID
      */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteRoute(Integer id) {
         Route route = getRouteById(id);
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();

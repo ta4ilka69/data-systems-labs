@@ -9,7 +9,7 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 2,
       stages: [
-        { duration: "10s", target: 2 },
+        { duration: "1s", target: 4 },
         { duration: "1s", target: 0 },
       ],
     },
@@ -134,7 +134,7 @@ export default function (data) {
   let routeId = data.sharedRouteId;
 
   group("Concurrent Updates on Shared Route", () => {
-    const updatedName = `UpdatedRoute_${Math.random()
+    const updatedName = `UpdatedRoute_${vu % data.sharedRouteTokens.length}_${Math.random()
       .toString(36)
       .substring(7)}`;
     const response = http.put(
@@ -158,13 +158,12 @@ export default function (data) {
     );
     check(response, {
       "shared route update handled correctly": (r) =>
-        r.status === 200 || r.status === 400,
+        r.status === 200 || r.status === 404,
     });
-    if (response.status !== 200 && response.status !== 400) {
-      console.log(response);
+    if (response.status !== 200 && response.status !== 404) {
+      console.log(response.body);
     }
   });
-
   group("Concurrent Deletion of Routes", () => {
     const response = deleteRoute(token, routeId);
     check(response, {
@@ -172,10 +171,9 @@ export default function (data) {
         r.status === 200 || r.status === 404,
     });
     if (response.status !== 200 && response.status !== 404) {
-      console.log(response);
+      console.log(response.body);
     }
   });
-
   // Use the updated `routeId` in subsequent tests
   group("Concurrent Creation of Routes with Duplicate Names", () => {
     const response = createRoute(token, SHARED_ROUTE_NAME);
@@ -189,7 +187,7 @@ export default function (data) {
     }
     if (response.status !== 409 && response.status !== 201) {
       console.log("Duplicate route creation failed");
-      console.log(response);
+      console.log(response.body);
     }
   });
 
@@ -199,5 +197,9 @@ export default function (data) {
       "routes import success or conflict": (r) =>
         r.status === 200 || r.status === 400,
     });
+    if (importResponse.status !== 200 && importResponse.status !== 400) {
+      console.log("Routes import failed");
+      console.log(importResponse.body);
+    }
   });
 }
