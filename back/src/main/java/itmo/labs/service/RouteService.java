@@ -8,8 +8,11 @@ import itmo.labs.repository.CoordinatesRepository;
 import itmo.labs.repository.LocationRepository;
 import itmo.labs.repository.RouteAuditRepository;
 import itmo.labs.repository.RouteRepository;
-import itmo.labs.repository.UserRepository;
+
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -19,14 +22,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.transaction.annotation.Propagation;
 
 @Service
 public class RouteService {
+
     private final RouteRepository routeRepository;
     private final LocationRepository locationRepository;
     private final CoordinatesRepository coordinatesRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final RouteAuditRepository routeAuditRepository;
     private final RouteWebSocketController routeWebSocketController;
 
@@ -34,12 +37,12 @@ public class RouteService {
     public RouteService(RouteRepository routeRepository,
             LocationRepository locationRepository,
             CoordinatesRepository coordinatesRepository,
-            UserRepository userRepository,
-            RouteAuditRepository routeAuditRepository, RouteWebSocketController routeWebSocketController) {
+            UserService userService,
+            RouteAuditRepository routeAuditRepository, RouteWebSocketController routeWebSocketController){
         this.routeRepository = routeRepository;
         this.locationRepository = locationRepository;
         this.coordinatesRepository = coordinatesRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.routeAuditRepository = routeAuditRepository;
         this.routeWebSocketController = routeWebSocketController;
     }
@@ -50,18 +53,24 @@ public class RouteService {
      * @param route the Route entity
      * @return the created Route
      */
+        @Retryable(
+        value = { PSQLException.class },
+        maxAttempts = 4,
+        backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Route createRoute(RouteDTO routeDTO) {
-        // new unique name check
-        if (routeRepository.findAll().stream()
-                .anyMatch(r -> r.getName().equalsIgnoreCase(routeDTO.getName()))) {
+        if (routeRepository.existsByNameIgnoreCase(routeDTO.getName())) {
             throw new IllegalArgumentException("Route with name '" + routeDTO.getName() + "' already exists");
         }
         // Retrieve the currently authenticated user
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
-
+        User currentUser;
+        try {
+            currentUser = userService.getUserByUsername(currentUsername);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User not found: " + currentUsername);
+        }
         Route route = RouteDTO.convertToEntity(routeDTO);
         route.setCreatedBy(currentUser);
         route.setCreationDate(LocalDateTime.now());
@@ -75,7 +84,6 @@ public class RouteService {
         audit.setTimestamp(LocalDateTime.now());
         audit.setPerformedBy(currentUser);
         audit.setDescription("Route created with ID: " + createdRoute.getId());
-        routeAuditRepository.save(audit);
         routeWebSocketController
                 .notifyRouteChange(new RouteUpdateDTO(OperationType.CREATE, createdRoute.getId(), routeDTO));
         return createdRoute;
@@ -88,17 +96,25 @@ public class RouteService {
      * @param routeDetails the Route data to update
      * @return the updated Route
      */
+    @Retryable(
+        value = { PSQLException.class },
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Route updateRoute(Integer id, RouteDTO routeDetails) {
         Route route = getRouteById(id);
         // new unique name check
-        if (routeRepository.findAll().stream()
-                .anyMatch(r -> r.getName().equalsIgnoreCase(routeDetails.getName()))) {
+        if (routeRepository.existsByNameIgnoreCase(routeDetails.getName())) {
             throw new IllegalArgumentException("Route with name '" + routeDetails.getName() + "' already exists");
         }
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+        User currentUser;   
+        try {
+            currentUser = userService.getUserByUsername(currentUsername);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User not found: " + currentUsername);
+        }
 
         // Check permissions
         boolean isOwner = route.getCreatedBy().getId() == currentUser.getId();
@@ -163,14 +179,7 @@ public class RouteService {
         RouteDTO updatedRouteDTO = RouteDTO.convertToDTO(updatedRoute);
         routeWebSocketController
                 .notifyRouteChange(new RouteUpdateDTO(OperationType.UPDATE, updatedRoute.getId(), updatedRouteDTO));
-        // Create audit log
-        RouteAudit audit = new RouteAudit();
-        audit.setRoute(updatedRoute);
-        audit.setOperationType(OperationType.UPDATE);
-        audit.setTimestamp(LocalDateTime.now());
-        audit.setPerformedBy(currentUser);
-        audit.setDescription("Route updated with ID: " + updatedRoute.getId());
-        routeAuditRepository.save(audit);
+        //lockProvider.getReentranLock().unlock();
         return updatedRoute;
     }
 
@@ -180,12 +189,21 @@ public class RouteService {
      *
      * @param id the Route ID
      */
+    @Retryable(
+        value = { PSQLException.class },
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteRoute(Integer id) {
         Route route = getRouteById(id);
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+        User currentUser;
+        try {
+            currentUser = userService.getUserByUsername(currentUsername);    
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User not found: " + currentUsername);
+        }
 
         boolean isOwner = route.getCreatedBy().getId() == currentUser.getId();
         boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
@@ -195,20 +213,18 @@ public class RouteService {
         }
 
         if (isAdmin && !isOwner && !route.isAllowAdminEditing()) {
-            throw new IllegalArgumentException("Admin is not allowed to delete this route." + route.getCreatedBy().getId() + " " + currentUser.getId());
+            throw new IllegalArgumentException("Admin is not allowed to delete this route."
+                    + route.getCreatedBy().getId() + " " + currentUser.getId());
         }
-
+        //while(!lockProvider.getReentranLock().isHeldByCurrentThread()){
+        //    lockProvider.getReentranLock().lock();
+        //}
         routeRepository.delete(route);
         routeWebSocketController.notifyRouteChange(new RouteUpdateDTO(OperationType.DELETE, route.getId(), null));
         // Create audit log
-        RouteAudit audit = new RouteAudit();
-        audit.setRoute(route);
-        audit.setOperationType(OperationType.DELETE);
-        audit.setTimestamp(LocalDateTime.now());
-        audit.setPerformedBy(currentUser);
-        audit.setDescription("Route deleted with ID: " + route.getId());
-        routeAuditRepository.save(audit);
-        routeWebSocketController.notifyRouteChange(new RouteUpdateDTO(OperationType.DELETE, route.getId(), RouteDTO.convertToDTO(route)));
+        routeWebSocketController.notifyRouteChange(
+                new RouteUpdateDTO(OperationType.DELETE, route.getId(), RouteDTO.convertToDTO(route)));
+        //lockProvider.getReentranLock().unlock();
     }
 
     /**
@@ -238,8 +254,12 @@ public class RouteService {
      */
     public void deleteRoutesByRating(int rating) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+            User currentUser;
+        try {
+            currentUser = userService.getUserByUsername(currentUsername);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User not found: " + currentUsername);
+        }
         List<Route> routesToDelete = routeRepository.findAll()
                 .stream()
                 .filter(route -> route.getRating() == rating)

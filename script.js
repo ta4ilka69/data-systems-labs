@@ -7,9 +7,10 @@ export const options = {
   scenarios: {
     concurrent_users: {
       executor: "ramping-vus",
-      startVUs: 2,
+      startVUs: 3,
       stages: [
-        { duration: "1s", target: 4 },
+        { duration: "1s", target: 10 },
+        { duration: "20s", target: 3 },
         { duration: "1s", target: 0 },
       ],
     },
@@ -30,6 +31,7 @@ const testUsers = new SharedArray("users", function () {
   return [
     { username: "admin", password: "qwerty" },
     { username: "useradmin", password: "qwerty" },
+    { username: "asdf", password: "qwerty" },
   ];
 });
 
@@ -132,7 +134,6 @@ export default function (data) {
   const vu = __VU; // Current Virtual User I
   const token = data.sharedRouteTokens[vu % data.sharedRouteTokens.length];
   let routeId = data.sharedRouteId;
-
   group("Concurrent Updates on Shared Route", () => {
     const updatedName = `UpdatedRoute_${vu % data.sharedRouteTokens.length}_${Math.random()
       .toString(36)
@@ -161,6 +162,21 @@ export default function (data) {
         r.status === 200 || r.status === 404,
     });
     if (response.status !== 200 && response.status !== 404) {
+      console.log(response.body);
+    }
+  });
+  group("Concurrent Creation of Routes with Duplicate Names", () => {
+    const response = createRoute(token, SHARED_ROUTE_NAME);
+    check(response, {
+      "duplicate route creation handled correctly": (r) =>
+        r.status === 201 || r.status === 409,
+    });
+    if (response.status === 201) {
+      data.sharedRouteId = response.json("id");
+      routeId = data.sharedRouteId;
+    }
+    if (response.status !== 409 && response.status !== 201) {
+      console.log("Duplicate route creation failed");
       console.log(response.body);
     }
   });

@@ -3,11 +3,9 @@ package itmo.labs.service;
 import itmo.labs.model.Coordinates;
 import itmo.labs.repository.CoordinatesRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.transaction.annotation.Propagation;
 
 @Service
 public class CoordinatesService {
@@ -17,7 +15,7 @@ public class CoordinatesService {
     public CoordinatesService(CoordinatesRepository coordinatesRepository) {
         this.coordinatesRepository = coordinatesRepository;
     }
-    
+    @Transactional
     public Coordinates saveCoordinates(Coordinates coordinates) {
         if(coordinates.getX() < -180 || coordinates.getX() > 180 || coordinates.getY() < -90 || coordinates.getY() > 90) {
             throw new IllegalArgumentException("Coordinates are out of range");

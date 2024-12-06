@@ -7,5 +7,5 @@ import itmo.labs.model.Route;
 
 @Repository
 public interface RouteRepository extends JpaRepository<Route, Integer> {
-
+    boolean existsByNameIgnoreCase(String name);
 }

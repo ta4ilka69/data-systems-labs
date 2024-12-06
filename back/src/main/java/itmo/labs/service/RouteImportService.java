@@ -22,29 +22,25 @@ import itmo.labs.model.ImportHistory;
 import itmo.labs.model.Role;
 import itmo.labs.model.User;
 import itmo.labs.repository.ImportHistoryRepository;
-import itmo.labs.repository.RouteRepository;
-import itmo.labs.repository.UserRepository;
 import itmo.labs.utils.YamlRouteParser;
 import java.time.LocalDateTime;
 
 @Service
 public class RouteImportService {
 
-    private final RouteRepository routeRepository;
     private final RouteService routeService;
     private final ImportHistoryRepository importHistoryRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CoordinatesService coordinatesService;
     private final LocationService locationService;
 
     @Autowired
-    public RouteImportService(RouteRepository routeRepository, RouteService routeService,
-            ImportHistoryRepository importHistoryRepository, UserRepository userRepository,
+    public RouteImportService(RouteService routeService,
+            ImportHistoryRepository importHistoryRepository, UserService userService,
             CoordinatesService coordinatesService, LocationService locationService) {
-        this.routeRepository = routeRepository;
         this.routeService = routeService;
         this.importHistoryRepository = importHistoryRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.coordinatesService = coordinatesService;
         this.locationService = locationService;
     }
@@ -52,8 +48,12 @@ public class RouteImportService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void importRoutes(MultipartFile file, ImportHistory history) throws Exception {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+        User currentUser;   
+        try {
+            currentUser = userService.getUserByUsername(currentUsername);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User not found: " + currentUsername);
+        }
         history.setTimestamp(LocalDateTime.now());
         history.setPerformedBy(currentUser.getUsername());
         importHistoryRepository.save(history);
@@ -91,17 +91,8 @@ public class RouteImportService {
                 }
             }
 
-            // Проверка уникальности имен маршрутов в базе данных
-            List<String> existingNames = routeRepository.findAll()
-                    .stream()
-                    .map(itmo.labs.model.Route::getName)
-                    .toList();
-
             if (importDTO.getRoutes() != null) {
                 for (RouteDTO dto : importDTO.getRoutes()) {
-                    if (existingNames.contains(dto.getName())) {
-                        throw new IllegalArgumentException("Route name already exists in the system: " + dto.getName());
-                    }
                     // Проверка координат
                     if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
                         throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
@@ -113,7 +104,12 @@ public class RouteImportService {
                 for (RouteDTO dto : importDTO.getRoutes()) {
                     dto.setCreatedById(currentUser.getId());
                     dto.setCreatedByUsername(currentUser.getUsername());
-                    routeService.createRoute(dto);
+                    try{
+                        routeService.createRoute(dto);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(
+                                "Error importing routes on number " + totalImported + ": " + e.getMessage());
+                    }
                     totalImported++;
                 }
             }
@@ -125,8 +121,12 @@ public class RouteImportService {
 
     public List<ImportHistoryUpdateDTO> getImportHistory() {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + currentUsername));
+        User currentUser;
+        try {
+            currentUser = userService.getUserByUsername(currentUsername);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User not found: " + currentUsername);
+        }
 
         List<ImportHistory> histories;
 
