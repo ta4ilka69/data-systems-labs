@@ -48,7 +48,7 @@ public class RouteImportService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void importRoutes(MultipartFile file, ImportHistory history) throws Exception {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser;   
+        User currentUser;
         try {
             currentUser = userService.getUserByUsername(currentUsername);
         } catch (IllegalArgumentException e) {
@@ -59,7 +59,7 @@ public class RouteImportService {
         importHistoryRepository.save(history);
         try (InputStream inputStream = file.getInputStream()) {
             YamlUploadDTO importDTO = YamlRouteParser.parseYamlFile(inputStream);
-            int totalImported = 0;
+            int totalImported = 1;
             // Проверка уникальности имен маршрутов в файле
             // Import standalone coordinates
             try {
@@ -84,33 +84,36 @@ public class RouteImportService {
                 throw new IllegalArgumentException(
                         "Error importing locations on number " + totalImported + ": " + e.getMessage());
             }
-            Set<String> names = new HashSet<>();
-            for (RouteDTO dto : importDTO.getRoutes()) {
-                if (!names.add(dto.getName())) {
-                    throw new IllegalArgumentException("Duplicate route name found in import file: " + dto.getName());
-                }
-            }
-
             if (importDTO.getRoutes() != null) {
+                Set<String> names = new HashSet<>();
                 for (RouteDTO dto : importDTO.getRoutes()) {
-                    // Проверка координат
-                    if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
-                        throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
-                    }
-                    if (dto.getCoordinates().getY() < -90 || dto.getCoordinates().getY() > 90) {
-                        throw new IllegalArgumentException("Invalid Y (longitude) for route: " + dto.getName());
+                    if (!names.add(dto.getName())) {
+                        throw new IllegalArgumentException(
+                                "Duplicate route name found in import file: " + dto.getName());
                     }
                 }
-                for (RouteDTO dto : importDTO.getRoutes()) {
-                    dto.setCreatedById(currentUser.getId());
-                    dto.setCreatedByUsername(currentUser.getUsername());
-                    try{
-                        routeService.createRoute(dto);
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException(
-                                "Error importing routes on number " + totalImported + ": " + e.getMessage());
+
+                if (importDTO.getRoutes() != null) {
+                    for (RouteDTO dto : importDTO.getRoutes()) {
+                        // Проверка координат
+                        if (dto.getCoordinates().getX() < -180 || dto.getCoordinates().getX() > 180) {
+                            throw new IllegalArgumentException("Invalid X (latitude) for route: " + dto.getName());
+                        }
+                        if (dto.getCoordinates().getY() < -90 || dto.getCoordinates().getY() > 90) {
+                            throw new IllegalArgumentException("Invalid Y (longitude) for route: " + dto.getName());
+                        }
                     }
-                    totalImported++;
+                    for (RouteDTO dto : importDTO.getRoutes()) {
+                        dto.setCreatedById(currentUser.getId());
+                        dto.setCreatedByUsername(currentUser.getUsername());
+                        try {
+                            routeService.createRoute(dto);
+                        } catch (Exception e) {
+                            throw new IllegalArgumentException(
+                                    "Error importing routes on number " + totalImported + ": " + e.getMessage());
+                        }
+                        totalImported++;
+                    }
                 }
             }
             history.setRecordsImported(totalImported);
