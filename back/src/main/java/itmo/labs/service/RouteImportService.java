@@ -65,10 +65,11 @@ public class RouteImportService {
         history.setPerformedBy(currentUser.getUsername());
 
         // Generate a unique filename, e.g., using UUID
-        String userFileName = currentUser.getUsername() +"_" + System.currentTimeMillis() + "/" + file.getOriginalFilename();
+        String userFileName = currentUser.getUsername() + "_" + System.currentTimeMillis() + "/"
+                + file.getOriginalFilename();
 
         try {
-            // Upload file to MinIO
+            // Upload file to MinIO, phase 1
             try (InputStream inputStream = file.getInputStream()) {
                 minioClient.putObject(
                         PutObjectArgs.builder()
@@ -76,8 +77,7 @@ public class RouteImportService {
                                 .object(userFileName)
                                 .stream(inputStream, file.getSize(), -1)
                                 .contentType(file.getContentType())
-                                .build()
-                );
+                                .build());
             }
 
             // Set the file URL in history
@@ -86,15 +86,14 @@ public class RouteImportService {
                             .method(io.minio.http.Method.GET)
                             .bucket("ta4ilka-drive")
                             .object(userFileName)
-                            .build()
-            );
+                            .build());
             history.setFileUrl(fileUrl);
         } catch (MinioException e) {
             throw new Exception("Error uploading file to MinIO: " + e.getMessage());
         }
 
         importHistoryRepository.save(history);
-
+        // phase 2: import, save to db
         try (InputStream inputStream = file.getInputStream()) {
             YamlUploadDTO importDTO = YamlRouteParser.parseYamlFile(inputStream);
             int totalImported = 1;
@@ -158,20 +157,22 @@ public class RouteImportService {
                     totalImported++;
                 }
             }
-
+            // Phase 3, OK
             history.setRecordsImported(totalImported);
             importHistoryRepository.save(history);
 
         } catch (Exception e) {
-            // If any exception occurs, delete the uploaded file to maintain consistency
+            // Phase 3, Something wrong
+            // we dont need to work with db, because db will rollback itself
             history.setFileUrl(null);
             try {
                 minioClient.removeObject(
                         io.minio.RemoveObjectArgs.builder()
                                 .bucket("ta4ilka-drive")
                                 .object(userFileName)
-                                .build()
-                );
+                                .build());
+                minioClient.removeObject(io.minio.RemoveObjectArgs.builder().bucket("ta4ilka-drive")
+                        .object(userFileName.substring(0, userFileName.lastIndexOf('/'))).build());
             } catch (Exception ex) {
                 // Log this exception
                 System.err.println("Failed to delete file from MinIO after rollback: " + ex.getMessage());
