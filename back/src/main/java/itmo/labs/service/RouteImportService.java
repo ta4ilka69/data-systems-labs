@@ -65,7 +65,7 @@ public class RouteImportService {
         history.setPerformedBy(currentUser.getUsername());
 
         // Generate a unique filename, e.g., using UUID
-        String userFileName = currentUser.getUsername() + "/" + file.getOriginalFilename();
+        String userFileName = currentUser.getUsername() +"_" + System.currentTimeMillis() + "/" + file.getOriginalFilename();
 
         try {
             // Upload file to MinIO
