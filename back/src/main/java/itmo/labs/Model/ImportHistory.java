@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,6 +28,10 @@ public class ImportHistory {
 
     private String performedBy;
 
+    @Column(length = 1024)
+    private String fileUrl;
+
+    @Column(length = 1024)
     private int recordsImported;
 
     public enum ImportStatus {

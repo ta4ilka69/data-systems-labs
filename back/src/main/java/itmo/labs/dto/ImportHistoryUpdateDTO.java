@@ -17,6 +17,7 @@ public class ImportHistoryUpdateDTO {
     private String performedBy;
     private int recordsImported;
     private String errorMessage;
+    private String fileUrl;
     public ImportHistoryUpdateDTO(ImportHistory importHistory) {
         this.id = importHistory.getId();
         this.timestamp = importHistory.getTimestamp();
@@ -24,5 +25,6 @@ public class ImportHistoryUpdateDTO {
         this.performedBy = importHistory.getPerformedBy();
         this.recordsImported = importHistory.getRecordsImported();
         this.errorMessage = importHistory.getErrorMessage();
+        this.fileUrl = importHistory.getFileUrl();
     }
 }
