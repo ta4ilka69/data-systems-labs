@@ -164,6 +164,7 @@ public class RouteImportService {
 
         } catch (Exception e) {
             // If any exception occurs, delete the uploaded file to maintain consistency
+            history.setFileUrl(null);
             try {
                 minioClient.removeObject(
                         io.minio.RemoveObjectArgs.builder()
