@@ -7,4 +7,7 @@ front:
 minio:
 	cd minio && minio server . --console-address :9001
 
-.PHONY: back front minio
+k6:
+	k6 run script.js
+
+.PHONY: back front minio k6
