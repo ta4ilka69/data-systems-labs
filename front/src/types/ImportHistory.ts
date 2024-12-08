@@ -5,4 +5,5 @@ export interface ImportHistory {
     performedBy: string;
     recordsImported: number;
     errorMessage: string | null;
+    fileUrl: string | undefined;
   }

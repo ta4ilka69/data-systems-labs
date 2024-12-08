@@ -36,6 +36,7 @@ const ImportHistoryComponent: React.FC = () => {
             <th>Performed By</th>
             <th>Records Imported</th>
             <th>Error Message</th>
+            <th>File URL</th>
           </tr>
         </thead>
         <tbody>
@@ -49,6 +50,11 @@ const ImportHistoryComponent: React.FC = () => {
               <td>{history.performedBy}</td>
               <td>{history.recordsImported}</td>
               <td className="error-message">{history.errorMessage || "N/A"}</td>
+              <td>
+                <a href={history.fileUrl} target="_blank" rel="noopener noreferrer">
+                  View File
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>
